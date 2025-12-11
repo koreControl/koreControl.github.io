@@ -17,13 +17,13 @@
             margin: 0;
             padding: 0;
             font-family: 'Montserrat', sans-serif;
-            background-color: #050505; /* Deep Charcoal, not Pitch Black */
+            background-color: #000000;
             color: var(--text-white);
             overflow-x: hidden;
             min-height: 100vh;
         }
 
-        /* The Canvas sits behind everything */
+        /* Canvas Background */
         #smokeCanvas {
             position: fixed;
             top: 0;
@@ -31,7 +31,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: linear-gradient(to bottom, #0a0a0a, #000000);
+            background: radial-gradient(circle at center, #1a1a1a 0%, #000000 100%);
         }
 
         /* Navbar */
@@ -53,7 +53,6 @@
             letter-spacing: 3px;
             text-transform: uppercase;
             color: #fff;
-            text-shadow: 0 0 10px rgba(255,255,255,0.2);
         }
 
         /* Hero Section */
@@ -76,7 +75,7 @@
             margin-bottom: 20px;
             text-transform: uppercase;
             letter-spacing: -2px;
-            text-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
         p.subtitle {
@@ -85,10 +84,9 @@
             margin-bottom: 40px;
             color: var(--text-gray);
             font-weight: 400;
-            text-shadow: 0 2px 5px rgba(0,0,0,1);
         }
 
-        /* Liquid Glass Cards */
+        /* Cards */
         .features-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -102,19 +100,18 @@
 
         .glass-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             border: 1px solid var(--glass-border);
             border-radius: 20px;
             padding: 50px 40px;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease, background 0.3s ease;
         }
 
         .glass-card:hover {
             transform: translateY(-10px);
-            border-color: rgba(255, 255, 255, 0.3);
             background: rgba(40, 40, 40, 0.7);
+            border-color: rgba(255,255,255,0.3);
         }
 
         .glass-card h3 {
@@ -157,7 +154,7 @@
 
         .btn-main:hover {
             transform: scale(1.05);
-            box-shadow: 0 0 40px rgba(255,255,255,0.4);
+            box-shadow: 0 0 40px rgba(255,255,255,0.3);
         }
 
         /* Footer */
@@ -167,7 +164,7 @@
             border-top: 1px solid var(--glass-border);
             font-size: 0.8rem;
             color: #555;
-            background: #050505;
+            background: #000;
             position: relative;
             z-index: 5;
         }
@@ -221,7 +218,6 @@
         const canvas = document.getElementById('smokeCanvas');
         const ctx = canvas.getContext('2d');
         
-        // Resize Canvas to fit screen
         function resize() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
@@ -229,7 +225,6 @@
         window.addEventListener('resize', resize);
         resize();
 
-        // Mouse Tracker
         let mouse = { x: null, y: null };
         window.addEventListener('mousemove', (e) => {
             mouse.x = e.x;
@@ -240,68 +235,65 @@
             mouse.y = e.touches[0].clientY;
         }, {passive: true});
 
-        // Particle System
         class Particle {
             constructor() {
                 this.x = Math.random() * canvas.width;
                 this.y = Math.random() * canvas.height;
-                // Random size for depth effect
-                this.size = Math.random() * 150 + 50; 
-                // Speed
+                // TINY PARTICLES (1px to 4px)
+                this.size = Math.random() * 3 + 1; 
+                // Drift Upwards (Smoke rises)
                 this.speedX = Math.random() * 1 - 0.5;
-                this.speedY = Math.random() * 1 - 0.5;
-                // Brightness (Gray smoke)
-                this.color = 'rgba(255, 255, 255, 0.03)';
+                this.speedY = Math.random() * -1 - 0.2; // Negative Y moves up
+                // Opacity
+                this.opacity = Math.random() * 0.5 + 0.1;
             }
 
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
 
-                // Mouse Interaction (Smoke runs away from mouse)
+                // Mouse Repel
                 if (mouse.x != null) {
                     let dx = mouse.x - this.x;
                     let dy = mouse.y - this.y;
                     let distance = Math.sqrt(dx * dx + dy * dy);
-                    const forceDirectionX = dx / distance;
-                    const forceDirectionY = dy / distance;
-                    const maxDistance = 300;
-                    
-                    if (distance < maxDistance) {
-                        const force = (maxDistance - distance) / maxDistance;
-                        const directionX = forceDirectionX * force * 5;
-                        const directionY = forceDirectionY * force * 5;
-                        this.x -= directionX;
-                        this.y -= directionY;
+                    if (distance < 100) {
+                        const forceDirectionX = dx / distance;
+                        const forceDirectionY = dy / distance;
+                        const force = (100 - distance) / 100;
+                        this.x -= forceDirectionX * force * 3;
+                        this.y -= forceDirectionY * force * 3;
                     }
                 }
 
-                // Wrap around screen
-                if (this.x > canvas.width + this.size) this.x = 0 - this.size;
-                if (this.x < 0 - this.size) this.x = canvas.width + this.size;
-                if (this.y > canvas.height + this.size) this.y = 0 - this.size;
-                if (this.y < 0 - this.size) this.y = canvas.height + this.size;
+                // Reset when off screen (creates infinite loop)
+                if (this.y < 0) {
+                    this.y = canvas.height;
+                    this.x = Math.random() * canvas.width;
+                }
             }
 
             draw() {
-                ctx.fillStyle = this.color;
+                ctx.fillStyle = 'rgba(255, 255, 255,' + this.opacity + ')';
                 ctx.beginPath();
                 ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.shadowBlur = 5; // Glow effect
+                ctx.shadowColor = "white";
                 ctx.fill();
+                ctx.shadowBlur = 0; // Reset for performance
             }
         }
 
-        // Create 100 Particles
         const particleArray = [];
         function init() {
             particleArray.length = 0;
-            for (let i = 0; i < 60; i++) {
+            // 200 PARTICLES for dense smoke feel
+            for (let i = 0; i < 200; i++) {
                 particleArray.push(new Particle());
             }
         }
         init();
 
-        // Animation Loop
         function animate() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             for (let i = 0; i < particleArray.length; i++) {
@@ -311,7 +303,6 @@
             requestAnimationFrame(animate);
         }
         animate();
-
     </script>
 
 </body>
