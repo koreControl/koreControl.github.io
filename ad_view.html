@@ -7,13 +7,7 @@
     <script src="https://cdn.fluidplayer.com/v3/current/fluidplayer.min.js"></script>
     <style> 
         body { margin: 0; background: black; overflow: hidden; } 
-        /* Primary Video Container */
-        #video-container { width: 100vw; height: 100vh; display: block; background: black; }
-        /* Backup Iframe Container (Hidden by default) */
-        #backup-frame { 
-            width: 100vw; height: 100vh; border: none; display: none; 
-            position: absolute; top: 0; left: 0; z-index: 999; background: white;
-        }
+        #video-container { width: 100vw; height: 100vh; display: block; }
     </style>
 </head>
 <body>
@@ -24,16 +18,14 @@
         </video>
     </div>
 
-    <iframe id="backup-frame"></iframe>
-
     <script>
         // --- CONFIGURATION ---
         const videoTag = 'https://homelybottle.com/dHmIFHz/d.GRNKvHZtGXUn/hemmM9GuyZdUPlYkuP/T/YF3HMcjQQb2mNRTZQ/t/Ncj/c_ycN/DeYc1qNiQe';
-        const backupLink = 'https://otieu.com/4/10310118'; 
-        const cycleTime = 600000; // 10 Minutes
+        const cycleTime = 600000; // 10 Minutes Success Timer
+        const failTime = 5000;    // 5 Seconds Retry Timer
         // ---------------------
 
-        let adStarted = false;
+        let adSuccess = false;
 
         var myPlayer = fluidPlayer('my-video', {
             layoutControls: {
@@ -44,71 +36,50 @@
             vastOptions: {
                 adList: [{ roll: 'preRoll', vastTag: videoTag }],
                 vastAdvanced: {
-                    // 1. Standard Error Detection
+                    // IF VIDEO FAILS:
                     noVastVideoCallback: function() { 
-                        console.log("Video Failed/No Fill. Switching to Backup.");
-                        loadBackup(); 
+                        console.log("No Ad. Retrying...");
+                        quickRetry(); 
                     },
-                    // 2. Success Detection
+                    // IF VIDEO STARTS:
                     vastVideoStartedCallback: function() {
-                        console.log("Video Started Successfully.");
-                        adStarted = true; // Mark as success so Watchdog doesn't fire
+                        console.log("Ad Started!");
+                        adSuccess = true;
                     },
+                    // IF VIDEO ENDS:
                     vastVideoEndedCallback: function() {
-                        console.log("Video Ad Finished.");
+                        console.log("Ad Finished. Waiting for cycle.");
                         hideAndSchedule();
                     }
                 }
             }
         });
 
-        // --- THE WATCHDOG (Brute Force Fix) ---
-        // If ad hasn't started in 5 seconds, KILL IT and load backup.
+        // WATCHDOG: If nothing happens in 8 seconds, force reload
         setTimeout(function() {
-            if (!adStarted) {
-                console.log("Watchdog: Video stuck/loading too long. Forcing Backup.");
-                loadBackup();
+            if (!adSuccess) {
+                console.log("Watchdog: Ad stuck. Retrying.");
+                quickRetry();
             }
-        }, 5000); 
+        }, 8000); 
 
-        // Function to Switch to Monetag Backup
-        function loadBackup() {
-            if (adStarted) return; // Don't interrupt if video is actually playing
-            
-            // Hide Video Player
-            document.getElementById('video-container').style.display = 'none';
-            
-            // Show Monetag Iframe
-            var frame = document.getElementById('backup-frame');
-            frame.src = backupLink;
-            frame.style.display = 'block';
-
-            // AUTO-CLOSE TIMER:
-            // Force close backup after 25 seconds
-            setTimeout(function() {
-                console.log("Backup Ad Duration Over. Hiding.");
-                frame.style.display = 'none'; 
-                frame.src = ""; // Stop data usage
-                scheduleNextCycle(); 
-            }, 25000); 
+        // 1. Quick Retry (If ad fails, try again in 5 seconds)
+        function quickRetry() {
+            setTimeout(function(){
+               window.location.reload();
+            }, failTime);
         }
 
-        // Failsafe: Handle Generic Player Errors
-        myPlayer.on('error', function() { 
-            console.log("Player Error Detected.");
-            loadBackup(); 
-        });
-
-        // Clean Up and Wait
+        // 2. Long Wait (If ad succeeds, wait 10 mins)
         function hideAndSchedule() {
             document.getElementById('video-container').style.display = 'none';
-            document.getElementById('backup-frame').style.display = 'none';
-            console.log("Ad sequence done. Waiting...");
-            
             setTimeout(function(){
                window.location.reload();
             }, cycleTime);
         }
+
+        // Handle generic errors
+        myPlayer.on('error', function() { quickRetry(); });
 
     </script>
 </body>
