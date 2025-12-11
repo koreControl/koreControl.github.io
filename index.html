@@ -7,13 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Slightly lighter background to make black smoke visible */
-            --bg-color: #1e1e1e;
-            --glass-panel: rgba(255, 255, 255, 0.03);
-            --border-color: rgba(255, 255, 255, 0.05);
+            /* Dark Grey background provides contrast for PURE BLACK smoke */
+            --bg-color: #2a2a2a; 
+            --glass-panel: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.15);
             --accent-red: #ff3333;
             --text-main: #ffffff;
-            --text-muted: #888888;
+            --text-muted: #d0d0d0;
         }
 
         body {
@@ -34,8 +34,7 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            /* Gradient Background to simulate depth */
-            background: radial-gradient(circle at center, #2a2a2a 0%, #111111 100%);
+            background: radial-gradient(circle at center, #353535 0%, #151515 100%);
         }
 
         /* NAVIGATION */
@@ -65,13 +64,14 @@
         .logo span { color: var(--accent-red); }
 
         .version-badge {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.8);
             padding: 5px 12px;
             border-radius: 4px;
             font-size: 0.8rem;
             font-family: 'JetBrains Mono', monospace;
-            color: #666;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #eee;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            font-weight: 600;
         }
 
         /* HERO SECTION */
@@ -96,8 +96,9 @@
             margin-bottom: 25px;
             color: #fff;
             position: relative;
-            /* ID for Smoke Target */
-            display: inline-block;
+            z-index: 2;
+            /* Heavy shadow to float above the heavy smoke */
+            text-shadow: 5px 5px 0px rgba(0,0,0,0.8); 
         }
 
         .tagline {
@@ -106,6 +107,8 @@
             max-width: 600px;
             line-height: 1.6;
             margin-bottom: 40px;
+            font-weight: 500;
+            text-shadow: 0 2px 4px rgba(0,0,0,1);
         }
 
         /* BUTTONS */
@@ -120,38 +123,39 @@
             padding: 18px 40px;
             background: #fff;
             color: #000;
-            font-weight: 700;
+            font-weight: 800;
             text-decoration: none;
             text-transform: uppercase;
-            border-radius: 2px;
+            border-radius: 0px; 
             letter-spacing: 1px;
             transition: all 0.2s;
             position: relative;
             z-index: 2;
+            border: 2px solid #fff;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+            background: #f0f0f0;
         }
 
         .btn-secondary {
             padding: 18px 40px;
-            background: transparent;
+            background: rgba(0,0,0,0.9); /* Opaque background */
             color: #fff;
-            border: 1px solid var(--border-color);
-            font-weight: 600;
+            border: 2px solid rgba(255,255,255,0.4);
+            font-weight: 700;
             text-decoration: none;
             text-transform: uppercase;
-            border-radius: 2px;
+            border-radius: 0px;
             letter-spacing: 1px;
             transition: all 0.2s;
-            backdrop-filter: blur(5px);
         }
 
         .btn-secondary:hover {
             border-color: #fff;
-            background: rgba(255, 255, 255, 0.05);
+            background: #000;
         }
 
         /* GRID */
@@ -167,18 +171,17 @@
         }
 
         .card {
-            background: var(--glass-panel);
-            border: 1px solid var(--border-color);
+            background: rgba(25, 25, 25, 0.95); /* Almost solid card */
+            border: 1px solid rgba(255, 255, 255, 0.15);
             padding: 40px;
-            backdrop-filter: blur(5px);
-            transition: transform 0.3s;
+            transition: transform 0.2s;
             position: relative;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(40, 40, 40, 0.4);
+            border-color: #fff;
+            background: #000;
         }
 
         .card h3 {
@@ -192,7 +195,7 @@
         }
 
         .card p {
-            color: var(--text-muted);
+            color: #ccc;
             line-height: 1.6;
             font-size: 0.95rem;
             margin-bottom: 0;
@@ -202,32 +205,23 @@
             width: 8px;
             height: 8px;
             background: #00ff88;
-            border-radius: 50%;
+            border-radius: 0;
             display: inline-block;
-            box-shadow: 0 0 10px #00ff88;
+            box-shadow: 0 0 5px #00ff88;
         }
 
         /* FOOTER */
         .footer {
             border-top: 1px solid var(--border-color);
-            background: #111;
+            background: #151515;
             padding: 60px 20px;
             text-align: center;
-            color: #666;
+            color: #777;
             font-size: 0.8rem;
             position: relative;
             z-index: 2;
         }
 
-        .system-req {
-            font-family: 'JetBrains Mono', monospace;
-            color: #666;
-            margin-top: 20px;
-            font-size: 0.8rem;
-            text-transform: uppercase;
-        }
-
-        /* MOBILE FIXES */
         @media (max-width: 768px) {
             h1 { font-size: 3rem; }
             nav { padding: 20px; }
@@ -245,7 +239,7 @@
     </nav>
 
     <section class="hero">
-        <div class="system-req" style="margin-bottom: 20px; color: #00ff88;">
+        <div style="margin-bottom: 20px; color: #00ff88; font-family: 'JetBrains Mono'; font-size: 0.8rem; font-weight: bold;">
             ● SYSTEM STATUS: ONLINE (iRO TESTED)
         </div>
         
@@ -261,7 +255,7 @@
             <a href="#" class="btn-secondary">View Roadmap</a>
         </div>
 
-        <div class="system-req">
+        <div style="margin-top: 20px; color: #999; font-family: 'JetBrains Mono'; font-size: 0.8rem;">
             Requires: Windows 11 • Dedicated GPU Recommended
         </div>
     </section>
@@ -283,7 +277,7 @@
 
     <footer class="footer">
         <p>KORE CONTROL PROJECT © 2025<br>Educational Proof-of-Concept. Use at your own risk.</p>
-        <p style="margin-top: 10px; color: #444;">Known Issues: Auto-Loot (In Dev) • Skill Mapping (Beta) • NPC Loops</p>
+        <p style="margin-top: 10px; color: #555;">Known Issues: Auto-Loot (In Dev) • Skill Mapping (Beta) • NPC Loops</p>
     </footer>
 
     <script>
@@ -294,20 +288,23 @@
         let emitters = [];
         let smokeImage;
 
-        // 1. GENERATE PROCEDURAL SMOKE SPRITE
-        // This solves the "Circle Problem" by drawing a fuzzy cloud into memory once.
-        function createSmokeSprite() {
-            const size = 128;
+        // 1. CREATE SOLID OPACITY SPRITE
+        function createHeavySmokeSprite() {
+            const size = 256;
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = size;
             tempCanvas.height = size;
             const tCtx = tempCanvas.getContext('2d');
 
-            // Create a radial gradient (soft blurry ball)
             const grad = tCtx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-            grad.addColorStop(0, 'rgba(0, 0, 0, 0.8)'); // Inner Black
-            grad.addColorStop(0.4, 'rgba(0, 0, 0, 0.3)'); // Mid Gray
-            grad.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Transparent Edge
+            
+            // 90% SOLID BLACK CORE
+            // This is the key. It stays 100% opaque until the very edge.
+            grad.addColorStop(0, 'rgba(0, 0, 0, 1)'); 
+            grad.addColorStop(0.8, 'rgba(0, 0, 0, 0.95)'); 
+            
+            // Short fade at edge for crispness
+            grad.addColorStop(1, 'rgba(0, 0, 0, 0)'); 
 
             tCtx.fillStyle = grad;
             tCtx.beginPath();
@@ -317,7 +314,7 @@
             return tempCanvas;
         }
 
-        smokeImage = createSmokeSprite();
+        smokeImage = createHeavySmokeSprite();
 
         function resize() {
             width = canvas.width = window.innerWidth;
@@ -343,7 +340,7 @@
         window.addEventListener('scroll', findEmitters);
         setTimeout(() => { resize(); }, 100);
 
-        class SmokeParticle {
+        class HeavySmoke {
             constructor() {
                 this.reset(true);
             }
@@ -352,27 +349,28 @@
                 if (emitters.length > 0) {
                     const target = emitters[Math.floor(Math.random() * emitters.length)];
                     this.x = target.x + Math.random() * target.w;
-                    this.y = target.y + Math.random() * target.h;
+                    this.y = target.y + Math.random() * (target.h * 0.9);
                 } else {
                     this.x = width / 2;
                     this.y = height + 50;
                 }
 
-                // Randomize start so they don't all pop in at once
                 if (firstRun) this.y -= Math.random() * 200;
 
-                this.size = Math.random() * 50 + 40; // Base size
-                this.grow = Math.random() * 0.5 + 0.2; // How fast it expands
+                this.size = Math.random() * 70 + 50; 
+                this.grow = Math.random() * 0.3 + 0.1; 
                 
-                this.vx = Math.random() * 0.4 - 0.2; // Gentle drift
-                this.vy = Math.random() * -1.5 - 0.5; // Upward speed
+                this.vx = Math.random() * 0.5 - 0.25; 
+                this.vy = Math.random() * -1.8 - 0.8; // Fast Rise
                 
                 this.life = 0;
-                this.maxLife = Math.random() * 200 + 100;
-                this.alpha = 0;
-                this.maxAlpha = Math.random() * 0.2 + 0.05; // Max opacity (very transparent for layering)
+                this.maxLife = Math.random() * 150 + 80;
                 this.rotation = Math.random() * 6.28;
-                this.rotationSpeed = Math.random() * 0.02 - 0.01;
+                this.rotationSpeed = Math.random() * 0.03 - 0.015;
+                
+                // MAX VISIBILITY: 0.9 to 1.0 Alpha
+                this.maxAlpha = 0.95; 
+                this.alpha = 0;
             }
 
             update() {
@@ -382,16 +380,16 @@
                 this.rotation += this.rotationSpeed;
                 this.life++;
 
-                // Fade In / Fade Out logic
-                if (this.life < 50) {
-                    this.alpha = (this.life / 50) * this.maxAlpha;
-                } else if (this.life > this.maxLife - 50) {
-                    this.alpha = ((this.maxLife - this.life) / 50) * this.maxAlpha;
+                // Very Fast Fade In (To appear solid immediately)
+                if (this.life < 10) {
+                    this.alpha = (this.life / 10) * this.maxAlpha;
+                } else if (this.life > this.maxLife - 30) {
+                    this.alpha = ((this.maxLife - this.life) / 30) * this.maxAlpha;
+                } else {
+                    this.alpha = this.maxAlpha; // Stay solid in middle
                 }
 
-                if (this.life >= this.maxLife) {
-                    this.reset();
-                }
+                if (this.life >= this.maxLife) this.reset();
             }
 
             draw() {
@@ -399,24 +397,21 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
                 ctx.globalAlpha = this.alpha;
-                // Draw the PRE-RENDERED SPRITE instead of a circle
                 ctx.drawImage(smokeImage, -this.size/2, -this.size/2, this.size, this.size);
                 ctx.restore();
             }
         }
 
         const particles = [];
-        // 300 Large, soft particles create a seamless cloud
-        const count = 300; 
+        const count = 300; // High Density
 
         for (let i = 0; i < count; i++) {
-            particles.push(new SmokeParticle());
+            particles.push(new HeavySmoke());
         }
 
         function animate() {
             ctx.clearRect(0, 0, width, height);
             
-            // Draw all particles
             particles.forEach(p => {
                 p.update();
                 p.draw();
