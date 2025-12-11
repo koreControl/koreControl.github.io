@@ -3,71 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Display</title>
+    <title>Ad Processor</title>
     <style> 
         body { 
-            margin: 0; background: #000; overflow: hidden; 
-            font-family: monospace; color: #00ff00; 
+            margin: 0; background: #050505; overflow: hidden; 
+            font-family: 'Courier New', monospace; 
             display: flex; flex-direction: column;
             justify-content: center; align-items: center; height: 100vh;
         }
         
-        #status-bar {
-            width: 100%; text-align: center; padding: 10px;
-            background: #111; color: #fff; position: absolute; top: 0;
-            border-bottom: 1px solid #333;
+        /* THE HOME SCREEN (COOLING DOWN UI) */
+        #home-screen {
+            text-align: center; width: 100%;
+            display: block; /* Visible by default */
         }
+        h2 { color: #00ff00; font-size: 20px; margin-bottom: 5px; text-transform: uppercase; }
+        p { color: #888; font-size: 12px; margin-top: 5px; }
+        .loader { border: 2px solid #333; border-top: 2px solid #00ff00; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-top: 10px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* The Ad Container - Visible and Centered */
+        /* THE AD CONTAINER */
         #ad-frame { 
             width: 100vw; 
-            height: 85vh; /* Takes up most of the screen */
+            height: 90vh; /* Takes up most of screen */
             background: white; 
             border: none;
-            margin-top: 40px;
-            display: none; /* Hidden until cycle starts */
+            position: absolute; top: 40px; left: 0;
+            display: none; /* Hidden until active */
+            z-index: 10;
         }
     </style>
 </head>
 <body>
 
-    <div id="status-bar">System Status: <span id="status">Initializing...</span></div>
+    <div id="home-screen">
+        <h2 id="status-title">SYSTEM IDLE</h2>
+        <p>Next Revenue Cycle: <span id="countdown">--</span>s</p>
+        <div class="loader"></div>
+    </div>
 
     <iframe id="ad-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
 
     <script>
-        // --- YOUR ADSTERRA SMARTLINK ---
+        // --- CONFIGURATION ---
         const smartLink = 'https://www.effectivegatecpm.com/cw1ee9zt3?key=166a8de6e9417228de30d751d42c81fb'; 
-        // -------------------------------
+        const viewTime = 20000;   // 20 Seconds (Duration to watch Ad)
+        const cooldownTime = 40000; // 40 Seconds (Duration to wait at Home)
+        // TOTAL CYCLE = 60 Seconds (1 Minute)
+        // ---------------------
 
-        const viewDuration = 20000; // 20 Seconds (High Quality View)
-        const cycleInterval = 120000; // 2 Minutes (Refresh rate)
+        function runCycle() {
+            // PHASE 1: SHOW AD (20s)
+            showAd();
 
-        function startAdCycle() {
-            const frame = document.getElementById('ad-frame');
-            const status = document.getElementById('status');
-
-            // 1. Show Ad
-            status.innerText = "Ad Loading (Visible)...";
-            frame.style.display = 'block';
-            frame.src = smartLink;
-
-            // 2. Wait for View Duration (20s)
+            // PHASE 2: GO HOME (After 20s)
             setTimeout(() => {
-                status.innerText = "View Complete. Cooling Down...";
+                showHome();
                 
-                // Clear the frame to stop audio/video/cpu usage from the ad
-                frame.src = "about:blank"; 
-                frame.style.display = 'none';
-
-                // 3. Wait for Next Cycle (2m)
-                setTimeout(startAdCycle, cycleInterval);
-
-            }, viewDuration);
+                // PHASE 3: RESTART (After 40s more)
+                startCountdown(cooldownTime / 1000, () => {
+                    runCycle();
+                });
+            }, viewTime);
         }
 
-        // Start the loop immediately
-        startAdCycle();
+        function showAd() {
+            document.getElementById('home-screen').style.display = 'none';
+            const frame = document.getElementById('ad-frame');
+            frame.style.display = 'block';
+            frame.src = smartLink; // Load the Money Link
+            console.log("Ad Loading...");
+        }
+
+        function showHome() {
+            const frame = document.getElementById('ad-frame');
+            frame.style.display = 'none';
+            frame.src = "about:blank"; // Kill the ad to save resources
+            
+            document.getElementById('home-screen').style.display = 'block';
+            document.getElementById('status-title').innerText = "COOLING DOWN";
+            document.getElementById('status-title').style.color = "orange";
+            console.log("Ad Closed. Resting...");
+        }
+
+        function startCountdown(seconds, callback) {
+            let counter = seconds;
+            const timer = setInterval(() => {
+                counter--;
+                document.getElementById('countdown').innerText = counter;
+                if (counter <= 0) {
+                    clearInterval(timer);
+                    callback();
+                }
+            }, 1000);
+        }
+
+        // Start the first cycle immediately
+        runCycle();
 
     </script>
 </body>
