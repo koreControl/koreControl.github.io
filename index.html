@@ -1,29 +1,53 @@
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>koreControl | The Future of Ragnarok Automation</title>
-    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+    <title>koreControl | Stealth Ragnarok Automation</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --neon-red: #ff2a6d;
-            --neon-blue: #05d9e8;
-            --glass-bg: rgba(255, 255, 255, 0.05);
-            --glass-border: rgba(255, 255, 255, 0.1);
-            --text-main: #d1d5db;
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-white: #ffffff;
+            --text-gray: #aaaaaa;
         }
 
         body {
             margin: 0;
-            font-family: 'Rajdhani', sans-serif;
-            background-color: #01012b;
-            background-image: 
-                radial-gradient(circle at 15% 50%, rgba(255, 42, 109, 0.15), transparent 25%), 
-                radial-gradient(circle at 85% 30%, rgba(5, 217, 232, 0.15), transparent 25%);
-            color: var(--text-main);
+            font-family: 'Montserrat', sans-serif;
+            background-color: #000000;
+            color: var(--text-white);
             overflow-x: hidden;
             min-height: 100vh;
+        }
+
+        /* Smoke Animation Effect */
+        .smoke-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            filter: blur(50px);
+            opacity: 0.4;
+        }
+
+        .smoke {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(50,50,50,1) 0%, rgba(0,0,0,0) 70%);
+            animation: drift infinite alternate ease-in-out;
+        }
+
+        .s1 { width: 600px; height: 600px; top: -200px; left: -100px; animation-duration: 25s; }
+        .s2 { width: 500px; height: 500px; bottom: -100px; right: -150px; animation-duration: 30s; animation-delay: -5s; }
+        .s3 { width: 400px; height: 400px; top: 40%; left: 30%; animation-duration: 35s; animation-delay: -10s; background: radial-gradient(circle, rgba(80,80,80,0.8) 0%, rgba(0,0,0,0) 70%); }
+
+        @keyframes drift {
+            0% { transform: translate(0, 0) scale(1); }
+            100% { transform: translate(50px, -50px) scale(1.1); }
         }
 
         /* Navbar */
@@ -31,177 +55,216 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 20px 50px;
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid var(--glass-border);
-            position: fixed;
+            padding: 25px 50px;
+            position: absolute;
             width: 100%;
             top: 0;
-            z-index: 1000;
+            z-index: 10;
             box-sizing: border-box;
-            background: rgba(1, 1, 43, 0.7);
         }
 
         .logo {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 800;
+            letter-spacing: 3px;
             text-transform: uppercase;
-            letter-spacing: 2px;
+            background: linear-gradient(45deg, #fff, #888);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-        
-        .logo span { color: var(--neon-red); }
 
         /* Hero Section */
         .hero {
-            height: 100vh;
+            height: 90vh;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             text-align: center;
             padding: 0 20px;
-            position: relative;
         }
 
         h1 {
-            font-size: 5rem;
-            line-height: 1;
+            font-size: 4.5rem;
+            font-weight: 800;
+            line-height: 1.1;
             margin-bottom: 20px;
             text-transform: uppercase;
-            color: #fff;
-            text-shadow: 0 0 20px var(--neon-red);
+            letter-spacing: -2px;
         }
 
         p.subtitle {
-            font-size: 1.5rem;
-            max-width: 700px;
+            font-size: 1.3rem;
+            max-width: 650px;
             margin-bottom: 40px;
-            color: #a0a0a0;
+            color: var(--text-gray);
+            font-weight: 400;
         }
 
-        /* Glass Cards */
+        /* Liquid Glass Cards */
         .features-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 40px;
             max-width: 1200px;
-            margin: 50px auto;
-            padding: 0 20px;
+            margin: 0 auto 100px;
+            padding: 0 30px;
         }
 
         .glass-card {
             background: var(--glass-bg);
-            backdrop-filter: blur(16px);
-            -webkit-backdrop-filter: blur(16px);
+            backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
             border: 1px solid var(--glass-border);
-            border-radius: 16px;
-            padding: 40px;
-            transition: 0.3s ease;
+            border-radius: 20px;
+            padding: 50px 40px;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
             position: relative;
             overflow: hidden;
         }
 
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        }
+
         .glass-card:hover {
-            transform: translateY(-10px);
-            border-color: var(--neon-blue);
-            box-shadow: 0 0 30px rgba(5, 217, 232, 0.2);
+            transform: translateY(-15px) scale(1.02);
+            border-color: rgba(255, 255, 255, 0.2);
+            box-shadow: 0 15px 40px 0 rgba(0, 0, 0, 0.7);
         }
 
         .glass-card h3 {
-            font-size: 1.8rem;
+            font-size: 1.6rem;
             margin-top: 0;
-            color: #fff;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .icon-box {
+            background: rgba(255,255,255,0.1);
+            padding: 12px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .glass-card p {
-            font-size: 1.1rem;
-            line-height: 1.6;
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-gray);
+            margin: 0;
         }
 
-        /* Neon Buttons */
+        /* Premium Button */
         .btn-main {
-            padding: 20px 60px;
-            font-size: 1.5rem;
+            padding: 22px 70px;
+            font-size: 1.2rem;
             font-weight: 700;
             text-transform: uppercase;
             text-decoration: none;
-            color: #fff;
-            background: linear-gradient(90deg, var(--neon-red), #d90429);
-            border-radius: 50px;
-            border: none;
-            box-shadow: 0 0 20px rgba(255, 42, 109, 0.5);
-            transition: 0.3s;
-            cursor: pointer;
+            color: #000;
+            background: #ffffff;
+            border-radius: 4px;
+            transition: all 0.3s ease;
             letter-spacing: 2px;
+            position: relative;
+            overflow: hidden;
+            z-index: 1;
         }
 
-        .btn-main:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 50px rgba(255, 42, 109, 0.8);
+        .btn-main::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0;
+            width: 100%; height: 0%;
+            background: #d1d1d1;
+            transition: all 0.3s;
+            z-index: -1;
         }
+
+        .btn-main:hover::after { height: 100%; }
+        .btn-main:hover { color: #000; box-shadow: 0 0 30px rgba(255,255,255,0.3); }
 
         /* Status Badge */
         .status-badge {
-            background: rgba(5, 217, 232, 0.1);
-            color: var(--neon-blue);
-            padding: 8px 20px;
-            border-radius: 20px;
-            border: 1px solid var(--neon-blue);
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-white);
+            padding: 10px 25px;
+            border-radius: 50px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             display: inline-block;
+            letter-spacing: 1px;
+            backdrop-filter: blur(10px);
         }
 
         /* Footer */
         footer {
             text-align: center;
-            padding: 50px;
+            padding: 60px 20px;
             border-top: 1px solid var(--glass-border);
-            margin-top: 100px;
-            font-size: 0.9rem;
-            color: #666;
+            font-size: 0.8rem;
+            color: #555;
+            background: rgba(0,0,0,0.8);
         }
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
             h1 { font-size: 3rem; }
-            .hero { padding-top: 100px; height: auto; padding-bottom: 50px; }
+            nav { padding: 20px; }
+            .hero { height: auto; padding: 120px 20px 60px; }
+            .glass-card { padding: 30px 25px; }
         }
     </style>
 </head>
 <body>
 
+    <div class="smoke-container">
+        <div class="smoke s1"></div>
+        <div class="smoke s2"></div>
+        <div class="smoke s3"></div>
+    </div>
+
     <nav>
-        <div class="logo">kore<span>Control</span></div>
-        <div style="font-weight: 600; color: #fff;">v2.1 Stable</div>
+        <div class="logo">KORE CONTROL</div>
+        <div style="font-weight: 600; color: var(--text-gray); font-size: 0.9rem;">V2.1 STABLE</div>
     </nav>
 
     <div class="hero">
-        <div class="status-badge">● UNDETECTED & WORKING</div>
-        <h1>Dominate<br>Ragnarok</h1>
+        <div class="status-badge">● STATUS: UNDETECTED</div>
+        <h1>Dominate<br>Ragnarok.</h1>
         <p class="subtitle">The only visual AI automation tool that mimics human behavior perfectly. No injection. No packets. Pure optical logic.</p>
-        <a href="#" class="btn-main">Download Now</a>
-        <p style="margin-top: 20px; font-size: 0.9rem; color: #666;">Compatible with Windows 10 & 11</p>
+        <a href="#" class="btn-main">Download Client</a>
+        <p style="margin-top: 25px; font-size: 0.85rem; color: #666; text-transform: uppercase; letter-spacing: 1px;">Windows 10 / 11 Compatible</p>
     </div>
 
     <div class="features-grid">
         <div class="glass-card">
-            <h3>🛡️ Ghost Protocol</h3>
+            <h3><div class="icon-box">🛡️</div> Ghost Protocol</h3>
             <p>Our "Visual-Only" technology never touches game memory or network packets. It sees what you see, making it impossible for anti-cheat to distinguish from a human.</p>
         </div>
         <div class="glass-card">
-            <h3>⚡ Hyper-Light</h3>
-            <p>Runs silently in the background using less than 2% CPU. Optimized for multi-client farming on lower-end machines.</p>
+            <h3><div class="icon-box">⚡</div> Zero-Footprint</h3>
+            <p>Runs silently in the background using less than 2% CPU. Optimized for multi-client farming on any hardware configuration.</p>
         </div>
         <div class="glass-card">
-            <h3>🧠 Neural Farming</h3>
+            <h3><div class="icon-box">🧠</div> Neural Farming</h3>
             <p>Advanced image recognition identifies MVPs, filters loot, and navigates maps intelligently. It doesn't just click; it thinks.</p>
         </div>
     </div>
 
     <footer>
-        <p>&copy; 2025 koreControl Project. Educational use only.</p>
+        <p>&copy; 2025 koreControl Project. Educational and testing purposes only.<br>Not affiliated with Gravity or Ragnarok Online.</p>
     </footer>
 
 </body>
