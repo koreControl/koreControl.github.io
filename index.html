@@ -7,13 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-color: #050505;
-            --glass-panel: rgba(20, 20, 20, 0.6);
-            --border-color: rgba(255, 255, 255, 0.08);
+            /* LIGHTER BACKGROUND so Black Smoke is visible */
+            --bg-color: #1a1a1a; 
+            --glass-panel: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.1);
             --accent-red: #ff3333;
-            --accent-orange: #ff6b00;
-            --text-main: #e0e0e0;
-            --text-muted: #888;
+            --text-main: #ffffff;
+            --text-muted: #aaaaaa;
         }
 
         body {
@@ -26,16 +26,15 @@
             min-height: 100vh;
         }
 
-        /* CANVAS LAYER */
-        #fireCanvas {
+        /* CANVAS LAYER (Z-Index -1 puts it BEHIND the text, but in front of BG) */
+        #smokeCanvas {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             z-index: -1;
-            /* Deep gradient to create depth behind the smoke */
-            background: radial-gradient(circle at 50% 100%, #1a0505 0%, #000000 70%);
+            background: radial-gradient(circle at center, #2a2a2a 0%, #111111 100%);
         }
 
         /* NAVIGATION */
@@ -60,22 +59,21 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            text-shadow: 0 0 15px rgba(255, 51, 51, 0.5);
         }
 
         .logo span { color: var(--accent-red); }
 
         .version-badge {
-            background: rgba(255, 255, 255, 0.05);
+            background: rgba(0, 0, 0, 0.3);
             padding: 5px 12px;
             border-radius: 4px;
             font-size: 0.8rem;
             font-family: 'JetBrains Mono', monospace;
-            color: var(--accent-orange);
-            border: 1px solid rgba(255, 107, 0, 0.2);
+            color: #ccc;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        /* HERO SECTION */
+        /* HERO SECTION - We add IDs/Classes to target these for smoke */
         .hero {
             min-height: 90vh;
             display: flex;
@@ -96,8 +94,8 @@
             letter-spacing: -3px;
             margin-bottom: 25px;
             color: #fff;
-            /* Make text look like it's glowing hot */
-            text-shadow: 0 0 30px rgba(255, 100, 0, 0.3);
+            /* ID for Smoke Target */
+            position: relative;
         }
 
         .tagline {
@@ -126,14 +124,14 @@
             border-radius: 2px;
             letter-spacing: 1px;
             transition: all 0.2s;
-            border: 1px solid #fff;
-            box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+            position: relative;
+            /* This makes the button a Smoke Emitter */
+            z-index: 2;
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            box-shadow: 0 0 40px rgba(255, 255, 255, 0.3);
-            background: #fff;
+            box-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
         }
 
         .btn-secondary {
@@ -155,7 +153,7 @@
             background: rgba(255, 255, 255, 0.05);
         }
 
-        /* CARDS */
+        /* SPECS GRID */
         .grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -171,14 +169,16 @@
             background: var(--glass-panel);
             border: 1px solid var(--border-color);
             padding: 40px;
-            backdrop-filter: blur(20px);
+            backdrop-filter: blur(10px);
             transition: transform 0.3s;
+            /* Class for Smoke Target */
+            position: relative;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            border-color: rgba(255, 100, 0, 0.3);
-            background: rgba(30, 20, 20, 0.8);
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(40, 40, 40, 0.4);
         }
 
         .card h3 {
@@ -201,19 +201,19 @@
         .status-dot {
             width: 8px;
             height: 8px;
-            background: var(--accent-orange);
+            background: #00ff88;
             border-radius: 50%;
             display: inline-block;
-            box-shadow: 0 0 10px var(--accent-orange);
+            box-shadow: 0 0 10px #00ff88;
         }
 
         /* FOOTER */
         .footer {
             border-top: 1px solid var(--border-color);
-            background: #000;
+            background: #111;
             padding: 60px 20px;
             text-align: center;
-            color: #444;
+            color: #666;
             font-size: 0.8rem;
             position: relative;
             z-index: 2;
@@ -237,7 +237,7 @@
 </head>
 <body>
 
-    <canvas id="fireCanvas"></canvas>
+    <canvas id="smokeCanvas"></canvas>
 
     <nav>
         <div class="logo">kore<span>Control</span></div>
@@ -245,11 +245,11 @@
     </nav>
 
     <section class="hero">
-        <div class="system-req" style="margin-bottom: 20px; color: var(--accent-orange);">
+        <div class="system-req" style="margin-bottom: 20px; color: #00ff88;">
             ● SYSTEM STATUS: ONLINE (iRO TESTED)
         </div>
         
-        <h1>Visual<br>Supremacy.</h1>
+        <h1 id="main-title">Visual<br>Supremacy.</h1>
         
         <p class="tagline">
             The first truly visual AI for Ragnarok Online. No packets. No memory injection. 
@@ -257,7 +257,7 @@
         </p>
 
         <div class="btn-group">
-            <a href="#" class="btn-primary">Download Alpha</a>
+            <a href="#" class="btn-primary smoke-emitter">Download Alpha</a>
             <a href="#" class="btn-secondary">View Roadmap</a>
         </div>
 
@@ -267,15 +267,15 @@
     </section>
 
     <div class="grid">
-        <div class="card">
+        <div class="card smoke-emitter">
             <h3><span class="status-dot"></span> UNDETECTABLE</h3>
             <p>Unlike packet bots that trigger server-side flags, koreControl sees the screen like a human. It reads pixels, not code. 100% external.</p>
         </div>
-        <div class="card">
+        <div class="card smoke-emitter">
             <h3>NAVIGATOR AI</h3>
             <p>Autonomous mapping with 80% accuracy. Navigates complex terrain visually. <em>Note: May struggle with complex NPC dialogue chains in v0.9.</em></p>
         </div>
-        <div class="card">
+        <div class="card smoke-emitter">
             <h3>PERFORMANCE</h3>
             <p>Slower than packet injection but infinitely safer. Trade raw speed for account security. Optimized for Windows 11 kernel.</p>
         </div>
@@ -283,131 +283,108 @@
 
     <footer class="footer">
         <p>KORE CONTROL PROJECT © 2025<br>Educational Proof-of-Concept. Use at your own risk.</p>
-        <p style="margin-top: 10px; color: #333;">Known Issues: Auto-Loot (In Dev) • Skill Mapping (Beta) • NPC Loops</p>
+        <p style="margin-top: 10px; color: #444;">Known Issues: Auto-Loot (In Dev) • Skill Mapping (Beta) • NPC Loops</p>
     </footer>
 
     <script>
-        const canvas = document.getElementById('fireCanvas');
+        const canvas = document.getElementById('smokeCanvas');
         const ctx = canvas.getContext('2d');
 
         let width, height;
-        
+        let emitters = [];
+
         function resize() {
             width = canvas.width = window.innerWidth;
             height = canvas.height = window.innerHeight;
+            findEmitters(); // Re-calculate positions on resize
         }
-        window.addEventListener('resize', resize);
-        resize();
 
-        let mouse = { x: width/2, y: height/2 };
-        window.addEventListener('mousemove', e => {
-            mouse.x = e.clientX;
-            mouse.y = e.clientY;
-        });
-
-        class Particle {
-            constructor(type) {
-                this.type = type; // 'ember' or 'smoke'
-                this.init(true);
+        // Find positions of UI elements to spawn smoke from
+        function findEmitters() {
+            emitters = [];
+            
+            // 1. The Main Title
+            const title = document.getElementById('main-title');
+            if(title) {
+                const rect = title.getBoundingClientRect();
+                emitters.push({ x: rect.left, y: rect.top, w: rect.width, h: rect.height });
             }
 
-            init(firstRun = false) {
-                if (this.type === 'smoke') {
-                    // SMOKE: Spawns mostly in the center (Under Text)
-                    const centerBias = (Math.random() - 0.5) * (width * 0.6); 
-                    this.x = (width / 2) + centerBias;
-                    this.y = firstRun ? Math.random() * height : height + 50;
-                    this.size = Math.random() * 40 + 20; // Big puff
-                    this.speedY = Math.random() * -1 - 0.5; // Slow rise
-                    this.speedX = Math.random() * 0.5 - 0.25;
-                    this.color = 20; // Dark Gray value
-                    this.opacity = 0; // Starts invisible, fades in
-                    this.fadeState = 'in'; 
+            // 2. All elements with 'smoke-emitter' class (Cards, Buttons)
+            const elements = document.querySelectorAll('.smoke-emitter');
+            elements.forEach(el => {
+                const rect = el.getBoundingClientRect();
+                emitters.push({ x: rect.left, y: rect.top, w: rect.width, h: rect.height });
+            });
+        }
+
+        window.addEventListener('resize', resize);
+        window.addEventListener('scroll', findEmitters); // Update positions on scroll
+        
+        // Initial setup
+        setTimeout(() => { resize(); }, 100); // Small delay to let DOM render
+
+        class Particle {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                // Pick a random emitter
+                if (emitters.length > 0) {
+                    const target = emitters[Math.floor(Math.random() * emitters.length)];
+                    // Spawn random position along the TOP edge of the element
+                    this.x = target.x + Math.random() * target.w;
+                    this.y = target.y + Math.random() * (target.h * 0.5); // Spawn in upper half
                 } else {
-                    // EMBER: Spawns everywhere, chaotic
                     this.x = Math.random() * width;
-                    this.y = firstRun ? Math.random() * height : height + 10;
-                    this.size = Math.random() * 2 + 0.5; // Tiny spark
-                    this.speedY = Math.random() * -3 - 1; // Fast rise
-                    this.speedX = Math.random() * 1 - 0.5;
-                    // Ghost Rider Colors: Red, Orange, Yellow
-                    const colors = ['255, 50, 0', '255, 100, 0', '255, 150, 0'];
-                    this.colorString = colors[Math.floor(Math.random() * colors.length)];
-                    this.opacity = Math.random() * 0.8 + 0.2;
+                    this.y = height + 10;
                 }
+
+                this.size = Math.random() * 15 + 5; // Smoke puff size
+                this.speedY = Math.random() * -1.5 - 0.5; // Rise up
+                this.speedX = Math.random() * 0.6 - 0.3; // Drift side to side
+                this.opacity = Math.random() * 0.5 + 0.1; // Initial opacity
+                this.fadeRate = Math.random() * 0.005 + 0.002;
+                this.growth = Math.random() * 0.2 + 0.05;
             }
 
             update() {
                 this.x += this.speedX;
                 this.y += this.speedY;
+                this.size += this.growth; // Smoke expands as it rises
+                this.opacity -= this.fadeRate; // Smoke fades out
 
-                // SMOKE LOGIC
-                if (this.type === 'smoke') {
-                    // Fade in then out
-                    if (this.fadeState === 'in') {
-                        this.opacity += 0.005;
-                        if (this.opacity > 0.15) this.fadeState = 'out';
-                    } else {
-                        this.opacity -= 0.002;
-                    }
-                    this.size += 0.1; // Smoke expands as it rises
-                    
-                    // Reset if invisible or off screen
-                    if (this.opacity <= 0 || this.y < -100) this.init();
-                } 
-                
-                // EMBER LOGIC
-                else {
-                    // Interaction with Mouse (Repel)
-                    let dx = mouse.x - this.x;
-                    let dy = mouse.y - this.y;
-                    let dist = Math.sqrt(dx*dx + dy*dy);
-                    if(dist < 100) {
-                        this.x -= (dx/dist) * 2;
-                        this.y -= (dy/dist) * 2;
-                    }
-
-                    if (this.y < -10) this.init();
+                // If invisible, respawn at a UI element
+                if (this.opacity <= 0) {
+                    this.reset();
                 }
             }
 
             draw() {
                 ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI*2);
-                
-                if (this.type === 'smoke') {
-                    ctx.fillStyle = `rgba(${this.color}, ${this.color}, ${this.color}, ${this.opacity})`;
-                    ctx.shadowBlur = 0;
-                } else {
-                    ctx.fillStyle = `rgba(${this.colorString}, ${this.opacity})`;
-                    ctx.shadowBlur = 10;
-                    ctx.shadowColor = `rgba(${this.colorString}, 0.8)`;
-                }
-                
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                // PURE BLACK SMOKE
+                ctx.fillStyle = `rgba(0, 0, 0, ${this.opacity})`;
                 ctx.fill();
             }
         }
 
         const particles = [];
-        // 800 Embers (Chaos) + 100 Smoke Puffs (Atmosphere)
-        const emberCount = 800;
-        const smokeCount = 100;
+        const particleCount = 400; // Count
 
-        for(let i=0; i<emberCount; i++) particles.push(new Particle('ember'));
-        for(let i=0; i<smokeCount; i++) particles.push(new Particle('smoke'));
+        for (let i = 0; i < particleCount; i++) {
+            particles.push(new Particle());
+        }
 
         function animate() {
             ctx.clearRect(0, 0, width, height);
-            
-            // "Screen" blend mode makes fire glow, but keeps smoke dark
-            ctx.globalCompositeOperation = 'screen'; 
             
             particles.forEach(p => {
                 p.update();
                 p.draw();
             });
-            
-            ctx.globalCompositeOperation = 'source-over';
+
             requestAnimationFrame(animate);
         }
         animate();
