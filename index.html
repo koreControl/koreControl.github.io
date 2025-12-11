@@ -7,13 +7,13 @@
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Montserrat:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            /* Dark Grey background provides contrast for PURE BLACK smoke */
-            --bg-color: #2a2a2a; 
+            /* Lighter background to contrast with PURE BLACK smoke */
+            --bg-color: #222; 
             --glass-panel: rgba(255, 255, 255, 0.05);
-            --border-color: rgba(255, 255, 255, 0.15);
+            --border-color: rgba(255, 255, 255, 0.1);
             --accent-red: #ff3333;
             --text-main: #ffffff;
-            --text-muted: #d0d0d0;
+            --text-muted: #bbb;
         }
 
         body {
@@ -34,7 +34,8 @@
             width: 100%;
             height: 100%;
             z-index: -1;
-            background: radial-gradient(circle at center, #353535 0%, #151515 100%);
+            /* Gradient to give depth */
+            background: radial-gradient(circle at center, #333 0%, #111 100%);
         }
 
         /* NAVIGATION */
@@ -64,14 +65,13 @@
         .logo span { color: var(--accent-red); }
 
         .version-badge {
-            background: rgba(0, 0, 0, 0.8);
+            background: rgba(0, 0, 0, 0.5);
             padding: 5px 12px;
             border-radius: 4px;
             font-size: 0.8rem;
             font-family: 'JetBrains Mono', monospace;
-            color: #eee;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            font-weight: 600;
+            color: #ddd;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         /* HERO SECTION */
@@ -87,6 +87,7 @@
             z-index: 2;
         }
 
+        /* ID for Smoke Target */
         h1 {
             font-size: 5rem;
             font-weight: 800;
@@ -97,8 +98,7 @@
             color: #fff;
             position: relative;
             z-index: 2;
-            /* Heavy shadow to float above the heavy smoke */
-            text-shadow: 5px 5px 0px rgba(0,0,0,0.8); 
+            text-shadow: 0 0 20px rgba(0,0,0,1); 
         }
 
         .tagline {
@@ -107,8 +107,7 @@
             max-width: 600px;
             line-height: 1.6;
             margin-bottom: 40px;
-            font-weight: 500;
-            text-shadow: 0 2px 4px rgba(0,0,0,1);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.8);
         }
 
         /* BUTTONS */
@@ -123,39 +122,39 @@
             padding: 18px 40px;
             background: #fff;
             color: #000;
-            font-weight: 800;
+            font-weight: 700;
             text-decoration: none;
             text-transform: uppercase;
-            border-radius: 0px; 
+            border-radius: 2px;
             letter-spacing: 1px;
             transition: all 0.2s;
             position: relative;
             z-index: 2;
-            border: 2px solid #fff;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.6);
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
         .btn-primary:hover {
             transform: translateY(-2px);
-            background: #f0f0f0;
+            background: #e0e0e0;
         }
 
         .btn-secondary {
             padding: 18px 40px;
-            background: rgba(0,0,0,0.9); /* Opaque background */
+            background: rgba(0,0,0,0.6);
             color: #fff;
-            border: 2px solid rgba(255,255,255,0.4);
-            font-weight: 700;
+            border: 1px solid var(--border-color);
+            font-weight: 600;
             text-decoration: none;
             text-transform: uppercase;
-            border-radius: 0px;
+            border-radius: 2px;
             letter-spacing: 1px;
             transition: all 0.2s;
+            backdrop-filter: blur(5px);
         }
 
         .btn-secondary:hover {
             border-color: #fff;
-            background: #000;
+            background: rgba(255, 255, 255, 0.1);
         }
 
         /* GRID */
@@ -171,17 +170,18 @@
         }
 
         .card {
-            background: rgba(25, 25, 25, 0.95); /* Almost solid card */
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(30, 30, 30, 0.6);
+            border: 1px solid var(--border-color);
             padding: 40px;
-            transition: transform 0.2s;
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s;
             position: relative;
         }
 
         .card:hover {
             transform: translateY(-5px);
-            border-color: #fff;
-            background: #000;
+            border-color: rgba(255, 255, 255, 0.3);
+            background: rgba(40, 40, 40, 0.8);
         }
 
         .card h3 {
@@ -195,7 +195,7 @@
         }
 
         .card p {
-            color: #ccc;
+            color: var(--text-muted);
             line-height: 1.6;
             font-size: 0.95rem;
             margin-bottom: 0;
@@ -205,23 +205,24 @@
             width: 8px;
             height: 8px;
             background: #00ff88;
-            border-radius: 0;
+            border-radius: 50%;
             display: inline-block;
-            box-shadow: 0 0 5px #00ff88;
+            box-shadow: 0 0 10px #00ff88;
         }
 
         /* FOOTER */
         .footer {
             border-top: 1px solid var(--border-color);
-            background: #151515;
+            background: #111;
             padding: 60px 20px;
             text-align: center;
-            color: #777;
+            color: #666;
             font-size: 0.8rem;
             position: relative;
             z-index: 2;
         }
 
+        /* MOBILE */
         @media (max-width: 768px) {
             h1 { font-size: 3rem; }
             nav { padding: 20px; }
@@ -239,7 +240,7 @@
     </nav>
 
     <section class="hero">
-        <div style="margin-bottom: 20px; color: #00ff88; font-family: 'JetBrains Mono'; font-size: 0.8rem; font-weight: bold;">
+        <div style="margin-bottom: 20px; color: #00ff88; font-family: 'JetBrains Mono'; font-size: 0.8rem;">
             ● SYSTEM STATUS: ONLINE (iRO TESTED)
         </div>
         
@@ -255,7 +256,7 @@
             <a href="#" class="btn-secondary">View Roadmap</a>
         </div>
 
-        <div style="margin-top: 20px; color: #999; font-family: 'JetBrains Mono'; font-size: 0.8rem;">
+        <div style="margin-top: 20px; color: #666; font-family: 'JetBrains Mono'; font-size: 0.8rem;">
             Requires: Windows 11 • Dedicated GPU Recommended
         </div>
     </section>
@@ -277,7 +278,7 @@
 
     <footer class="footer">
         <p>KORE CONTROL PROJECT © 2025<br>Educational Proof-of-Concept. Use at your own risk.</p>
-        <p style="margin-top: 10px; color: #555;">Known Issues: Auto-Loot (In Dev) • Skill Mapping (Beta) • NPC Loops</p>
+        <p style="margin-top: 10px; color: #444;">Known Issues: Auto-Loot (In Dev) • Skill Mapping (Beta) • NPC Loops</p>
     </footer>
 
     <script>
@@ -288,22 +289,20 @@
         let emitters = [];
         let smokeImage;
 
-        // 1. CREATE SOLID OPACITY SPRITE
-        function createHeavySmokeSprite() {
-            const size = 256;
+        // 1. CREATE SOLID BLACK SMOKE SPRITE
+        function createThickSmokeSprite() {
+            const size = 256; 
             const tempCanvas = document.createElement('canvas');
             tempCanvas.width = size;
             tempCanvas.height = size;
             const tCtx = tempCanvas.getContext('2d');
 
             const grad = tCtx.createRadialGradient(size/2, size/2, 0, size/2, size/2, size/2);
-            
-            // 90% SOLID BLACK CORE
-            // This is the key. It stays 100% opaque until the very edge.
+            // SOLID BLACK CORE (1.0 Opacity)
+            // Stays totally solid until 60% of the radius
             grad.addColorStop(0, 'rgba(0, 0, 0, 1)'); 
-            grad.addColorStop(0.8, 'rgba(0, 0, 0, 0.95)'); 
-            
-            // Short fade at edge for crispness
+            grad.addColorStop(0.6, 'rgba(0, 0, 0, 0.95)'); 
+            // Only fades at the very edge
             grad.addColorStop(1, 'rgba(0, 0, 0, 0)'); 
 
             tCtx.fillStyle = grad;
@@ -314,7 +313,7 @@
             return tempCanvas;
         }
 
-        smokeImage = createHeavySmokeSprite();
+        smokeImage = createThickSmokeSprite();
 
         function resize() {
             width = canvas.width = window.innerWidth;
@@ -340,7 +339,7 @@
         window.addEventListener('scroll', findEmitters);
         setTimeout(() => { resize(); }, 100);
 
-        class HeavySmoke {
+        class ThickSmoke {
             constructor() {
                 this.reset(true);
             }
@@ -349,7 +348,7 @@
                 if (emitters.length > 0) {
                     const target = emitters[Math.floor(Math.random() * emitters.length)];
                     this.x = target.x + Math.random() * target.w;
-                    this.y = target.y + Math.random() * (target.h * 0.9);
+                    this.y = target.y + Math.random() * (target.h * 0.8);
                 } else {
                     this.x = width / 2;
                     this.y = height + 50;
@@ -357,19 +356,19 @@
 
                 if (firstRun) this.y -= Math.random() * 200;
 
-                this.size = Math.random() * 70 + 50; 
-                this.grow = Math.random() * 0.3 + 0.1; 
+                this.size = Math.random() * 80 + 60; // BIG PARTICLES
+                this.grow = Math.random() * 0.4 + 0.1; 
                 
-                this.vx = Math.random() * 0.5 - 0.25; 
-                this.vy = Math.random() * -1.8 - 0.8; // Fast Rise
+                this.vx = Math.random() * 0.6 - 0.3; 
+                this.vy = Math.random() * -1.5 - 0.5; // Rise Up
                 
                 this.life = 0;
-                this.maxLife = Math.random() * 150 + 80;
+                this.maxLife = Math.random() * 200 + 100;
                 this.rotation = Math.random() * 6.28;
-                this.rotationSpeed = Math.random() * 0.03 - 0.015;
+                this.rotationSpeed = Math.random() * 0.02 - 0.01;
                 
-                // MAX VISIBILITY: 0.9 to 1.0 Alpha
-                this.maxAlpha = 0.95; 
+                // HIGH OPACITY LOCK (90% - 100%)
+                this.maxAlpha = Math.random() * 0.1 + 0.9; 
                 this.alpha = 0;
             }
 
@@ -380,13 +379,11 @@
                 this.rotation += this.rotationSpeed;
                 this.life++;
 
-                // Very Fast Fade In (To appear solid immediately)
+                // Very Fast Fade In (Appear solid instantly)
                 if (this.life < 10) {
                     this.alpha = (this.life / 10) * this.maxAlpha;
-                } else if (this.life > this.maxLife - 30) {
-                    this.alpha = ((this.maxLife - this.life) / 30) * this.maxAlpha;
-                } else {
-                    this.alpha = this.maxAlpha; // Stay solid in middle
+                } else if (this.life > this.maxLife - 60) {
+                    this.alpha = ((this.maxLife - this.life) / 60) * this.maxAlpha;
                 }
 
                 if (this.life >= this.maxLife) this.reset();
@@ -397,16 +394,17 @@
                 ctx.translate(this.x, this.y);
                 ctx.rotate(this.rotation);
                 ctx.globalAlpha = this.alpha;
+                // Draw the High-Contrast Sprite
                 ctx.drawImage(smokeImage, -this.size/2, -this.size/2, this.size, this.size);
                 ctx.restore();
             }
         }
 
         const particles = [];
-        const count = 300; // High Density
+        const count = 250; // Dense cloud
 
         for (let i = 0; i < count; i++) {
-            particles.push(new HeavySmoke());
+            particles.push(new ThickSmoke());
         }
 
         function animate() {
