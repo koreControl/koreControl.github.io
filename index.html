@@ -449,8 +449,9 @@
         const vctx = visionCanvas.getContext('2d');
 
         function drawVisionBoxes() {
-            vctx.clearRect(0, 0, visionCanvas.width, visionCanvaseight);
-            visionCanvas.style.opacity = (Math.random() * 0.3 + 0.4).toFixed(2);
+            vctx.clearRect(0, 0, visionCanvas.width, visionCanvas.height);
+
+            visionCanvas.style.opacity = (Math.random() * 0.6 + 0.4).toFixed(2);
 
 
 
