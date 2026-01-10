@@ -1,144 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Processor</title>
-    <style> 
-        body { 
-            margin: 0; 
-            background: #050505; 
-            overflow: hidden; 
-            font-family: 'Courier New', monospace; 
-        }
-        
-        /* THE HOME SCREEN (COOLING DOWN UI) */
-        #home-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            text-align: center;
-        }
-        h2 { color: #00ff00; font-size: 20px; margin-bottom: 5px; text-transform: uppercase; }
-        p { color: #888; font-size: 12px; margin-top: 5px; }
-        .loader { 
-            border: 2px solid #333; 
-            border-top: 2px solid #00ff00; 
-            border-radius: 50%; 
-            width: 20px; 
-            height: 20px; 
-            animation: spin 1s linear infinite; 
-            display: inline-block; 
-            margin-top: 10px; 
-        }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        
-        /* AD DISPLAY - FULL PAGE */
-        #ad-display {
-            display: none;
-            width: 100vw;
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            z-index: 9999;
-        }
-        #ad-display iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ad Processor</title>
+
+<style>
+body {
+    margin: 0;
+    background: #050505;
+    overflow: hidden;
+    font-family: monospace;
+    height: 100vh;
+}
+
+#home {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#home h2 { color: #00ff00; font-size: 18px; margin: 4px; }
+#home p { color: #888; font-size: 12px; }
+
+#spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid #333;
+    border-top: 2px solid #00ff00;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+#ad {
+    position: absolute;
+    inset: 0;
+    display: none;
+    background: white;
+}
+</style>
 </head>
+
 <body>
-    <div id="home-screen">
-        <h2 id="status-title">SYSTEM IDLE</h2>
-        <p>Next Revenue Cycle: <span id="countdown">--</span>s</p>
-        <div class="loader"></div>
-    </div>
-    
-    <div id="ad-display"></div>
-    
-    <script>
-        // --- CONFIGURATION ---
-        const smartLink = 'https://www.effectivegatecpm.com/cw1ee9zt3?key=166a8de6e9417228de30d751d42c81fb'; 
-        const viewTime = 20000;     // 20 Seconds
-        const cooldownTime = 40000; // 40 Seconds
-        
-        // Get current state from URL
-        const params = new URLSearchParams(window.location.search);
-        const state = params.get('state') || 'cooldown';
-        const startTime = parseInt(params.get('t') || Date.now());
-        
-        console.log(`State: ${state}, Start: ${startTime}`);
-        
-        // STATE MACHINE
-        if (state === 'ad') {
-            showAd();
-            
-            // FORCE TRANSITION after viewTime
-            setTimeout(() => {
-                goToCooldown();
-            }, viewTime);
-            
-        } else {
-            // Default: cooldown state
-            showCooldown();
-            
-            const elapsed = Date.now() - startTime;
-            const remaining = Math.max(0, cooldownTime - elapsed);
-            
-            setTimeout(() => {
-                goToAd();
-            }, remaining);
-            
-            // Countdown display
-            startCountdown(Math.ceil(remaining / 1000));
+
+<div id="home">
+    <h2 id="state">SYSTEM IDLE</h2>
+    <p>Next cycle in <span id="count">--</span>s</p>
+    <div id="spinner"></div>
+</div>
+
+<div id="ad"></div>
+
+<script>
+/* ================= CONFIG ================= */
+const SMARTLINK = "https://www.effectivegatecpm.com/cw1ee9zt3?key=166a8de6e9417228de30d751d42c81fb";
+
+const VIEW_TIME = 20000;      // 20s ad
+const COOLDOWN = 40000;       // 40s rest
+const LOAD_TIMEOUT = 12000;  // iframe load timeout
+const HARD_RESET_AFTER = 8;  // cycles before full reload safeguard
+/* ========================================== */
+
+let cycle = 0;
+let timers = [];
+let iframe = null;
+
+function clearAllTimers() {
+    timers.forEach(t => clearTimeout(t));
+    timers = [];
+}
+
+function hardReload(reason) {
+    console.warn("HARD RELOAD:", reason);
+    location.reload();
+}
+
+/* ---------- CYCLE ---------- */
+function startCycle() {
+    cycle++;
+    clearAllTimers();
+
+    console.log("CYCLE", cycle);
+
+    if (cycle >= HARD_RESET_AFTER) {
+        hardReload("cycle limit reached");
+        return;
+    }
+
+    showAd();
+
+    timers.push(setTimeout(() => {
+        console.warn("Ad view timeout");
+        goHome();
+    }, VIEW_TIME));
+}
+
+/* ---------- AD ---------- */
+function showAd() {
+    document.getElementById("home").style.display = "none";
+
+    const ad = document.getElementById("ad");
+    ad.style.display = "block";
+
+    // HARD iframe reset (PyQt-safe)
+    ad.innerHTML = "";
+    iframe = document.createElement("iframe");
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.border = "none";
+
+    let loaded = false;
+
+    iframe.onload = () => {
+        loaded = true;
+        console.log("iframe onload");
+    };
+
+    iframe.src = SMARTLINK;
+    ad.appendChild(iframe);
+
+    // Load watchdog
+    timers.push(setTimeout(() => {
+        if (!loaded) {
+            console.warn("iframe failed to load");
+            goHome();
         }
-        
-        function showAd() {
-            document.getElementById('home-screen').style.display = 'none';
-            const adDiv = document.getElementById('ad-display');
-            adDiv.style.display = 'block';
-            
-            // Create iframe
-            const iframe = document.createElement('iframe');
-            iframe.src = smartLink;
-            adDiv.appendChild(iframe);
-            
-            console.log('Ad showing...');
+    }, LOAD_TIMEOUT));
+
+    // Blank/poison detection (PyQt specific)
+    timers.push(setTimeout(() => {
+        try {
+            const doc = iframe.contentDocument;
+            if (!doc || !doc.body || doc.body.innerHTML.trim().length < 30) {
+                console.warn("blank iframe detected");
+                goHome();
+            }
+        } catch (e) {
+            // cross-origin → assume OK
         }
-        
-        function showCooldown() {
-            document.getElementById('home-screen').style.display = 'flex';
-            document.getElementById('ad-display').style.display = 'none';
-            document.getElementById('status-title').innerText = "COOLING DOWN";
-            document.getElementById('status-title').style.color = "orange";
-            console.log('Cooldown...');
+    }, 4000));
+}
+
+/* ---------- HOME ---------- */
+function goHome() {
+    clearAllTimers();
+
+    const ad = document.getElementById("ad");
+    ad.style.display = "none";
+    ad.innerHTML = "";
+    iframe = null;
+
+    const home = document.getElementById("home");
+    home.style.display = "flex";
+
+    document.getElementById("state").textContent = "COOLING DOWN";
+
+    let s = COOLDOWN / 1000;
+    document.getElementById("count").textContent = s;
+
+    timers.push(setInterval(() => {
+        s--;
+        document.getElementById("count").textContent = s;
+        if (s <= 0) {
+            clearAllTimers();
+            startCycle();
         }
-        
-        function goToAd() {
-            window.location.href = `?state=ad&t=${Date.now()}`;
-        }
-        
-        function goToCooldown() {
-            window.location.href = `?state=cooldown&t=${Date.now()}`;
-        }
-        
-        function startCountdown(seconds) {
-            let counter = seconds;
-            document.getElementById('countdown').innerText = counter;
-            
-            const timer = setInterval(() => {
-                counter--;
-                document.getElementById('countdown').innerText = counter;
-                if (counter <= 0) {
-                    clearInterval(timer);
-                }
-            }, 1000);
-        }
-    </script>
+    }, 1000));
+}
+
+/* ---------- SAFETY ---------- */
+window.onerror = () => hardReload("js error");
+window.onunhandledrejection = () => hardReload("promise error");
+
+// Absolute failsafe (PyQt memory poison)
+setTimeout(() => hardReload("time based reset"), 15 * 60 * 1000);
+
+/* ---------- START ---------- */
+startCycle();
+</script>
+
 </body>
 </html>
