@@ -39,7 +39,7 @@
         <p>Next Revenue Cycle: <span id="countdown">--</span>s</p>
         <div class="loader"></div>
     </div>
-    <iframe id="ad-frame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"></iframe>
+    <iframe id="ad-frame" sandbox="allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-top-navigation"></iframe>
     <script>
         // --- CONFIGURATION ---
         const smartLink = 'https://www.effectivegatecpm.com/cw1ee9zt3?key=166a8de6e9417228de30d751d42c81fb'; 
@@ -53,7 +53,7 @@
         
         // ---------------------
         function runCycle() {
-            // SAFETY: Clear any stuck timers
+            // SAFETY: Clear any stuck timers from previous cycle
             if (phaseTimer) clearTimeout(phaseTimer);
             if (countdownInterval) clearInterval(countdownInterval);
             
@@ -75,7 +75,7 @@
             document.getElementById('home-screen').style.display = 'none';
             const frame = document.getElementById('ad-frame');
             
-            // SAFETY: Reset iframe to prevent stuck state
+            // SAFETY: Reset iframe before loading (prevents stuck white screen)
             frame.src = "about:blank";
             frame.style.display = 'block';
             frame.src = smartLink; // Load the Money Link
