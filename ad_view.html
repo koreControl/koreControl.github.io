@@ -17,33 +17,19 @@ body {
 #home {
     position: absolute;
     inset: 0;
-    display: flex;
+    display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
 
-#home h2 { color: #00ff00; font-size: 18px; margin: 4px; }
+#home h2 { color: orange; font-size: 18px; margin: 4px; }
 #home p { color: #888; font-size: 12px; }
-
-#spinner {
-    width: 18px;
-    height: 18px;
-    border: 2px solid #333;
-    border-top: 2px solid #00ff00;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
 
 #ad {
     position: absolute;
     inset: 0;
-    display: none;
+    display: block;
     background: white;
 }
 </style>
@@ -52,82 +38,27 @@ body {
 <body>
 
 <div id="home">
-    <h2 id="state">SYSTEM IDLE</h2>
-    <p>Next cycle in <span id="count">--</span>s</p>
-    <div id="spinner"></div>
+    <h2>COOLING DOWN</h2>
+    <p>Next cycle in <span id="count">40</span>s</p>
 </div>
 
 <div id="ad"></div>
 
 <script>
-/* ================= CONFIG ================= */
 const SMARTLINK = "https://www.effectivegatecpm.com/cw1ee9zt3?key=166a8de6e9417228de30d751d42c81fb";
 
-const VIEW_TIME = 20000;   // HARD MINIMUM
-const COOLDOWN  = 40000;   // HARD COOLDOWN
-/* ========================================== */
+const VIEW_TIME = 20000;   // 20s
+const COOLDOWN  = 40000;   // 40s
 
-let cycle = 0;
-let iframe = null;
-let adStartTime = 0;
-let adLocked = false;
-let cooldownTimer = null;
-
-/* ---------- HARD LOCKED EXIT ---------- */
-function tryGoHome(reason) {
-    const elapsed = Date.now() - adStartTime;
-
-    if (elapsed < VIEW_TIME) {
-        console.warn(
-            `REFUSED exit (${reason}) at ${elapsed}ms — minimum not reached`
-        );
-        return;
-    }
-
-    console.log("Ad finished legitimately:", reason);
-    forceGoHome();
-}
-
-/* ---------- FORCE HOME (NO GUARDS) ---------- */
-function forceGoHome() {
-    adLocked = false;
-
+function startAd() {
     const ad = document.getElementById("ad");
-    ad.style.display = "none";
-    ad.innerHTML = "";
-    iframe = null;
-
     const home = document.getElementById("home");
-    home.style.display = "flex";
 
-    document.getElementById("state").textContent = "COOLING DOWN";
-
-    let remaining = COOLDOWN / 1000;
-    document.getElementById("count").textContent = remaining;
-
-    cooldownTimer = setInterval(() => {
-        remaining--;
-        document.getElementById("count").textContent = remaining;
-
-        if (remaining <= 0) {
-            clearInterval(cooldownTimer);
-            startCycle();
-        }
-    }, 1000);
-}
-
-/* ---------- AD ---------- */
-function showAd() {
-    adStartTime = Date.now();
-    adLocked = true;
-
-    document.getElementById("home").style.display = "none";
-
-    const ad = document.getElementById("ad");
+    home.style.display = "none";
     ad.style.display = "block";
     ad.innerHTML = "";
 
-    iframe = document.createElement("iframe");
+    const iframe = document.createElement("iframe");
     iframe.style.width = "100%";
     iframe.style.height = "100%";
     iframe.style.border = "none";
@@ -135,35 +66,34 @@ function showAd() {
 
     ad.appendChild(iframe);
 
-    // HARD 20s GUARANTEE — NOTHING CAN CANCEL THIS
-    setTimeout(() => {
-        tryGoHome("view-time-complete");
-    }, VIEW_TIME);
+    // HARD WAIT — DOES NOT CARE IF IFRAME DIES
+    setTimeout(startCooldown, VIEW_TIME);
 }
 
-/* ---------- CYCLE ---------- */
-function startCycle() {
-    cycle++;
-    console.log("=== CYCLE", cycle, "START ===");
-    showAd();
+function startCooldown() {
+    const ad = document.getElementById("ad");
+    const home = document.getElementById("home");
+
+    ad.style.display = "none";
+    ad.innerHTML = "";
+
+    home.style.display = "flex";
+
+    let t = COOLDOWN / 1000;
+    document.getElementById("count").innerText = t;
+
+    const iv = setInterval(() => {
+        t--;
+        document.getElementById("count").innerText = t;
+        if (t <= 0) {
+            clearInterval(iv);
+            startAd();
+        }
+    }, 1000);
 }
 
-/* ---------- SAFETY ---------- */
-window.onerror = () => {
-    console.warn("JS error — ignored during ad lock");
-};
-
-window.onunhandledrejection = () => {
-    console.warn("Promise rejection — ignored during ad lock");
-};
-
-// Absolute PyQt poison reset (outside ad window)
-setTimeout(() => {
-    if (!adLocked) location.reload();
-}, 15 * 60 * 1000);
-
-/* ---------- START ---------- */
-startCycle();
+// START WITH AD
+startAd();
 </script>
 
 </body>
