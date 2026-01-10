@@ -47,13 +47,13 @@
         const cooldownTime = 40000; // 40 Seconds (Duration to wait at Home)
         // TOTAL CYCLE = 60 Seconds (1 Minute)
         
-        // SAFETY: Track active timers
+        // SAFETY: Track timers to prevent stuck cycles
         let phaseTimer = null;
         let countdownInterval = null;
         
         // ---------------------
         function runCycle() {
-            // SAFETY: Clear any previous timers
+            // SAFETY: Clear any stuck timers
             if (phaseTimer) clearTimeout(phaseTimer);
             if (countdownInterval) clearInterval(countdownInterval);
             
@@ -75,10 +75,10 @@
             document.getElementById('home-screen').style.display = 'none';
             const frame = document.getElementById('ad-frame');
             
-            // ONLY CHANGE: Reset to blank first (prevents stuck state)
+            // SAFETY: Reset iframe to prevent stuck state
             frame.src = "about:blank";
             frame.style.display = 'block';
-            frame.src = smartLink; // Load the Money Link immediately
+            frame.src = smartLink; // Load the Money Link
             
             console.log("Ad Loading...");
         }
