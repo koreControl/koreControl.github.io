@@ -47,20 +47,21 @@
         const cooldownTime = 40000; // 40 Seconds (Duration to wait at Home)
         // TOTAL CYCLE = 60 Seconds (1 Minute)
         
-        // SAFETY: Track active timers to prevent duplicates
-        let activeTimers = [];
+        // SAFETY: Track active timers
+        let phaseTimer = null;
+        let countdownInterval = null;
         
         // ---------------------
         function runCycle() {
-            // SAFETY: Clear any stuck timers from previous cycle
-            activeTimers.forEach(timer => clearTimeout(timer));
-            activeTimers = [];
+            // SAFETY: Clear any previous timers
+            if (phaseTimer) clearTimeout(phaseTimer);
+            if (countdownInterval) clearInterval(countdownInterval);
             
             // PHASE 1: SHOW AD (20s)
             showAd();
             
             // PHASE 2: GO HOME (After 20s)
-            const phaseTimer = setTimeout(() => {
+            phaseTimer = setTimeout(() => {
                 showHome();
                 
                 // PHASE 3: RESTART (After 40s more)
@@ -68,45 +69,24 @@
                     runCycle();
                 });
             }, viewTime);
-            
-            // SAFETY: Track this timer
-            activeTimers.push(phaseTimer);
         }
         
         function showAd() {
             document.getElementById('home-screen').style.display = 'none';
             const frame = document.getElementById('ad-frame');
             
-            // SAFETY: Complete iframe reset
-            frame.style.display = 'none';
+            // ONLY CHANGE: Reset to blank first (prevents stuck state)
             frame.src = "about:blank";
+            frame.style.display = 'block';
+            frame.src = smartLink; // Load the Money Link immediately
             
-            // SAFETY: Small delay ensures complete cleanup, then load ad
-            setTimeout(() => {
-                frame.style.display = 'block';
-                frame.src = smartLink; // Load the Money Link
-                console.log("Ad Loading...");
-            }, 100);
-            
-            // SAFETY: Handle iframe errors (network issues, blocked content, etc.)
-            frame.onerror = function() {
-                console.log("Ad failed to load, will continue cycle normally");
-            };
+            console.log("Ad Loading...");
         }
         
         function showHome() {
             const frame = document.getElementById('ad-frame');
             frame.style.display = 'none';
             frame.src = "about:blank"; // Kill the ad to save resources
-            
-            // SAFETY: Try to force cleanup of iframe content
-            try {
-                if (frame.contentWindow) {
-                    frame.contentWindow.location.replace('about:blank');
-                }
-            } catch(e) {
-                // Cross-origin restriction, ignore
-            }
             
             document.getElementById('home-screen').style.display = 'block';
             document.getElementById('status-title').innerText = "COOLING DOWN";
@@ -116,26 +96,15 @@
         
         function startCountdown(seconds, callback) {
             let counter = seconds;
-            const timer = setInterval(() => {
+            countdownInterval = setInterval(() => {
                 counter--;
                 document.getElementById('countdown').innerText = counter;
                 if (counter <= 0) {
-                    clearInterval(timer);
+                    clearInterval(countdownInterval);
                     callback();
                 }
             }, 1000);
         }
-        
-        // SAFETY: Catch any unhandled errors to prevent crash
-        window.addEventListener('error', (e) => {
-            console.error('Error caught:', e.message);
-            // Don't stop execution, just log it
-        });
-        
-        // SAFETY: Handle promise rejections
-        window.addEventListener('unhandledrejection', (e) => {
-            console.error('Promise rejection caught:', e.reason);
-        });
         
         // Start the first cycle immediately
         runCycle();
