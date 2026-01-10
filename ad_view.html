@@ -6,29 +6,49 @@
     <title>Ad Processor</title>
     <style> 
         body { 
-            margin: 0; background: #050505; overflow: hidden; 
+            margin: 0; 
+            background: #050505; 
+            overflow: hidden; 
             font-family: 'Courier New', monospace; 
-            display: flex; flex-direction: column;
-            justify-content: center; align-items: center; height: 100vh;
         }
         
         /* THE HOME SCREEN (COOLING DOWN UI) */
         #home-screen {
-            text-align: center; width: 100%;
-            display: block; /* Visible by default */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
         }
         h2 { color: #00ff00; font-size: 20px; margin-bottom: 5px; text-transform: uppercase; }
         p { color: #888; font-size: 12px; margin-top: 5px; }
-        .loader { border: 2px solid #333; border-top: 2px solid #00ff00; border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; margin-top: 10px; }
+        .loader { 
+            border: 2px solid #333; 
+            border-top: 2px solid #00ff00; 
+            border-radius: 50%; 
+            width: 20px; 
+            height: 20px; 
+            animation: spin 1s linear infinite; 
+            display: inline-block; 
+            margin-top: 10px; 
+        }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        /* THE AD CONTAINER */
-        #ad-container {
-            width: 100vw; 
-            height: 90vh;
-            position: absolute; top: 40px; left: 0;
+        
+        /* AD DISPLAY - FULL PAGE */
+        #ad-display {
             display: none;
-            z-index: 10;
-            background: white;
+            width: 100vw;
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 9999;
+        }
+        #ad-display iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
         }
     </style>
 </head>
@@ -38,137 +58,87 @@
         <p>Next Revenue Cycle: <span id="countdown">--</span>s</p>
         <div class="loader"></div>
     </div>
-    <div id="ad-container"></div>
+    
+    <div id="ad-display"></div>
+    
     <script>
         // --- CONFIGURATION ---
         const smartLink = 'https://www.effectivegatecpm.com/cw1ee9zt3?key=166a8de6e9417228de30d751d42c81fb'; 
-        const viewTime = 20000;        // 20 Seconds (Duration to watch Ad)
-        const cooldownTime = 40000;    // 40 Seconds (Duration to wait at Home)
-        const maxLoadWaitTime = 15000; // 15 Seconds max wait for ad to load
-        // TOTAL CYCLE = 60 Seconds (1 Minute)
+        const viewTime = 20000;     // 20 Seconds
+        const cooldownTime = 40000; // 40 Seconds
         
-        // SAFETY: Track timers to prevent stuck cycles
-        let phaseTimer = null;
-        let loadWatchdog = null;
-        let countdownInterval = null;
-        let currentIframe = null;
-        let cycleCount = 0;
+        // Get current state from URL
+        const params = new URLSearchParams(window.location.search);
+        const state = params.get('state') || 'cooldown';
+        const startTime = parseInt(params.get('t') || Date.now());
         
-        // ---------------------
-        function runCycle() {
-            cycleCount++;
-            console.log(`=== CYCLE ${cycleCount} START ===`);
-            
-            // SAFETY: Clear any stuck timers from previous cycle
-            if (phaseTimer) clearTimeout(phaseTimer);
-            if (loadWatchdog) clearTimeout(loadWatchdog);
-            if (countdownInterval) clearInterval(countdownInterval);
-            
-            // PHASE 1: SHOW AD
+        console.log(`State: ${state}, Start: ${startTime}`);
+        
+        // STATE MACHINE
+        if (state === 'ad') {
             showAd();
             
-            // WATCHDOG: If ad doesn't load in 15s, skip to cooldown
-            loadWatchdog = setTimeout(() => {
-                console.warn(`[Cycle ${cycleCount}] Ad load timeout - skipping to cooldown`);
-                forceGoHome();
-            }, maxLoadWaitTime);
-            
-            // PHASE 2: Normal close after viewTime (20s)
-            phaseTimer = setTimeout(() => {
-                console.log(`[Cycle ${cycleCount}] Normal ad close after ${viewTime/1000}s`);
-                forceGoHome();
+            // FORCE TRANSITION after viewTime
+            setTimeout(() => {
+                goToCooldown();
             }, viewTime);
+            
+        } else {
+            // Default: cooldown state
+            showCooldown();
+            
+            const elapsed = Date.now() - startTime;
+            const remaining = Math.max(0, cooldownTime - elapsed);
+            
+            setTimeout(() => {
+                goToAd();
+            }, remaining);
+            
+            // Countdown display
+            startCountdown(Math.ceil(remaining / 1000));
         }
         
         function showAd() {
             document.getElementById('home-screen').style.display = 'none';
-            const container = document.getElementById('ad-container');
+            const adDiv = document.getElementById('ad-display');
+            adDiv.style.display = 'block';
             
-            // CRITICAL FIX: Destroy old iframe completely
-            container.innerHTML = '';
+            // Create iframe
+            const iframe = document.createElement('iframe');
+            iframe.src = smartLink;
+            adDiv.appendChild(iframe);
             
-            // Create fresh iframe
-            currentIframe = document.createElement('iframe');
-            currentIframe.style.width = '100%';
-            currentIframe.style.height = '100%';
-            currentIframe.style.border = 'none';
-            
-            // Listen for load events
-            currentIframe.onload = function() {
-                console.log(`[Cycle ${cycleCount}] Iframe loaded`);
-                // Clear the watchdog since iframe loaded
-                if (loadWatchdog) {
-                    clearTimeout(loadWatchdog);
-                    loadWatchdog = null;
-                }
-            };
-            
-            currentIframe.onerror = function() {
-                console.error(`[Cycle ${cycleCount}] Iframe error - forcing cooldown`);
-                forceGoHome();
-            };
-            
-            currentIframe.src = smartLink;
-            container.appendChild(currentIframe);
-            container.style.display = 'block';
-            
-            console.log(`[Cycle ${cycleCount}] Ad loading...`);
+            console.log('Ad showing...');
         }
         
-        function forceGoHome() {
-            // Clear ALL timers first
-            if (phaseTimer) clearTimeout(phaseTimer);
-            if (loadWatchdog) clearTimeout(loadWatchdog);
-            if (countdownInterval) clearInterval(countdownInterval);
-            
-            phaseTimer = null;
-            loadWatchdog = null;
-            
-            showHome();
-            
-            // PHASE 3: RESTART after cooldown
-            startCountdown(cooldownTime / 1000, () => {
-                runCycle();
-            });
-        }
-        
-        function showHome() {
-            const container = document.getElementById('ad-container');
-            
-            // CRITICAL FIX: Nuclear option - destroy everything
-            container.style.display = 'none';
-            container.innerHTML = ''; // Remove iframe completely from DOM
-            currentIframe = null;
-            
-            document.getElementById('home-screen').style.display = 'block';
+        function showCooldown() {
+            document.getElementById('home-screen').style.display = 'flex';
+            document.getElementById('ad-display').style.display = 'none';
             document.getElementById('status-title').innerText = "COOLING DOWN";
             document.getElementById('status-title').style.color = "orange";
-            console.log(`[Cycle ${cycleCount}] Ad closed. Cooling down...`);
+            console.log('Cooldown...');
         }
         
-        function startCountdown(seconds, callback) {
+        function goToAd() {
+            window.location.href = `?state=ad&t=${Date.now()}`;
+        }
+        
+        function goToCooldown() {
+            window.location.href = `?state=cooldown&t=${Date.now()}`;
+        }
+        
+        function startCountdown(seconds) {
             let counter = seconds;
             document.getElementById('countdown').innerText = counter;
             
-            countdownInterval = setInterval(() => {
+            const timer = setInterval(() => {
                 counter--;
                 document.getElementById('countdown').innerText = counter;
                 if (counter <= 0) {
-                    clearInterval(countdownInterval);
-                    countdownInterval = null;
-                    callback();
+                    clearInterval(timer);
                 }
             }, 1000);
         }
-        
-        // Global error handler
-        window.addEventListener('error', (e) => {
-            console.error(`[Cycle ${cycleCount}] Global error:`, e.message);
-        });
-        
-        // Start the first cycle immediately
-        console.log("Ad System Starting...");
-        runCycle();
     </script>
 </body>
 </html>
