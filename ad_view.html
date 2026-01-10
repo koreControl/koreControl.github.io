@@ -2,6 +2,13 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+
+<!-- CRITICAL -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- CRITICAL: fixes broken image paths -->
+<base href="https://korecontrol.github.io/">
+
 <title>Ad Processor</title>
 
 <style>
@@ -10,126 +17,72 @@ html, body {
     padding: 0;
     width: 100%;
     height: 100%;
-    background: #050505;
+    background: #000;
     overflow: hidden;
-    font-family: monospace;
 }
 
-#root {
-    position: relative;
+/* NORMAL flow container */
+#ad-container {
     width: 100%;
     height: 100%;
+    background: #fff;
 }
 
-/* Ad container MUST be % based, not vw/vh */
-#ad {
-    position: absolute;
-    inset: 0;
-    background: white;
-    display: block;
-}
-
-/* Cooldown screen */
-#home {
-    position: absolute;
-    inset: 0;
-    background: #050505;
+#cooldown {
     display: none;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-#home h2 {
+    width: 100%;
+    height: 100%;
+    background: #000;
     color: orange;
-    margin: 4px;
-}
+    font-family: monospace;
+    font-size: 14px;
+    text-align: center;
 
-#home p {
-    color: #aaa;
-    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 </style>
 </head>
 
 <body>
 
-<div id="root">
-    <div id="ad"></div>
-
-    <div id="home">
-        <h2>COOLING DOWN</h2>
-        <p>Next cycle in <span id="count">40</span>s</p>
-    </div>
-</div>
+<div id="ad-container"></div>
+<div id="cooldown">Cooling down…</div>
 
 <script>
 const SMARTLINK = "https://www.effectivegatecpm.com/cw1ee9zt3?key=166a8de6e9417228de30d751d42c81fb";
 const VIEW_TIME = 20000;
 const COOLDOWN  = 40000;
 
-function forceRepaint() {
-    // Qt WebEngine repaint hack
-    document.body.style.display = "none";
-    void document.body.offsetHeight;
-    document.body.style.display = "block";
-}
+function showAd() {
+    const ad = document.getElementById("ad-container");
+    const cd = document.getElementById("cooldown");
 
-function startAd() {
-    const root = document.getElementById("root");
-    const oldAd = document.getElementById("ad");
-
-    // HARD replace ad container (prevents white freeze)
-    const newAd = document.createElement("div");
-    newAd.id = "ad";
-    newAd.style.position = "absolute";
-    newAd.style.inset = "0";
-    newAd.style.background = "white";
-
-    root.replaceChild(newAd, oldAd);
-
-    document.getElementById("home").style.display = "none";
-    newAd.style.display = "block";
+    cd.style.display = "none";
+    ad.style.display = "block";
+    ad.innerHTML = "";
 
     const iframe = document.createElement("iframe");
+    iframe.src = SMARTLINK;
     iframe.style.width = "100%";
     iframe.style.height = "100%";
     iframe.style.border = "none";
-    iframe.src = SMARTLINK;
+    iframe.setAttribute("scrolling", "no");
 
-    newAd.appendChild(iframe);
+    ad.appendChild(iframe);
 
-    forceRepaint();
-
-    setTimeout(startCooldown, VIEW_TIME);
+    setTimeout(showCooldown, VIEW_TIME);
 }
 
-function startCooldown() {
-    document.getElementById("ad").style.display = "none";
+function showCooldown() {
+    document.getElementById("ad-container").style.display = "none";
+    document.getElementById("cooldown").style.display = "flex";
 
-    const home = document.getElementById("home");
-    home.style.display = "flex";
-
-    let t = COOLDOWN / 1000;
-    document.getElementById("count").textContent = t;
-
-    forceRepaint();
-
-    const iv = setInterval(() => {
-        t--;
-        document.getElementById("count").textContent = t;
-        if (t <= 0) {
-            clearInterval(iv);
-            startAd();
-        }
-    }, 1000);
+    setTimeout(showAd, COOLDOWN);
 }
 
-// Absolute safety reload (Qt memory poison)
-setTimeout(() => location.reload(), 15 * 60 * 1000);
-
-// START
-startAd();
+showAd();
 </script>
 
 </body>
