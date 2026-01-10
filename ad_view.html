@@ -23,8 +23,16 @@ body {
     align-items: center;
 }
 
-#home h2 { color: #00ff00; font-size: 18px; margin: 4px; }
-#home p { color: #888; font-size: 12px; }
+#home h2 {
+    color: #00ff00;
+    font-size: 18px;
+    margin: 4px;
+}
+
+#home p {
+    color: #888;
+    font-size: 12px;
+}
 
 #spinner {
     width: 18px;
@@ -63,16 +71,18 @@ body {
 /* ================= CONFIG ================= */
 const SMARTLINK = "https://www.effectivegatecpm.com/cw1ee9zt3?key=166a8de6e9417228de30d751d42c81fb";
 
-const VIEW_TIME = 20000;      // 20s ad
-const COOLDOWN = 40000;       // 40s rest
-const LOAD_TIMEOUT = 12000;  // iframe load timeout
+const VIEW_TIME = 20000;     // 20 seconds (HARD minimum)
+const COOLDOWN = 40000;      // 40 seconds cooldown
+const LOAD_TIMEOUT = 12000;  // iframe load timeout (log only)
 const HARD_RESET_AFTER = 8;  // cycles before full reload safeguard
 /* ========================================== */
 
 let cycle = 0;
 let timers = [];
 let iframe = null;
+let adStartTime = 0;
 
+/* ---------- UTILS ---------- */
 function clearAllTimers() {
     timers.forEach(t => clearTimeout(t));
     timers = [];
@@ -88,68 +98,63 @@ function startCycle() {
     cycle++;
     clearAllTimers();
 
-    console.log("CYCLE", cycle);
+    console.log("=== CYCLE", cycle, "START ===");
 
-    if (cycle >= HARD_RESET_AFTER) {
+    if (cycle > HARD_RESET_AFTER) {
         hardReload("cycle limit reached");
         return;
     }
 
     showAd();
 
+    // HARD, FRAUD-SAFE AD END (20s guaranteed)
     timers.push(setTimeout(() => {
-        console.warn("Ad view timeout");
+        console.log("Ad completed full view time");
         goHome();
     }, VIEW_TIME));
 }
 
 /* ---------- AD ---------- */
 function showAd() {
+    adStartTime = Date.now();
+
     document.getElementById("home").style.display = "none";
 
     const ad = document.getElementById("ad");
     ad.style.display = "block";
-
-    // HARD iframe reset (PyQt-safe)
     ad.innerHTML = "";
+
     iframe = document.createElement("iframe");
     iframe.style.width = "100%";
     iframe.style.height = "100%";
     iframe.style.border = "none";
 
-    let loaded = false;
-
     iframe.onload = () => {
-        loaded = true;
         console.log("iframe onload");
     };
 
     iframe.src = SMARTLINK;
     ad.appendChild(iframe);
 
-    // Load watchdog
+    // LOAD TIMEOUT (LOG ONLY — no early exit)
     timers.push(setTimeout(() => {
-        if (!loaded) {
-            console.warn("iframe failed to load");
-            goHome();
-        }
+        console.warn("iframe load timeout (will recover next cycle)");
     }, LOAD_TIMEOUT));
 
-    // Blank/poison detection (PyQt specific)
+    // BLANK / POISON DETECTION (LOG ONLY)
     timers.push(setTimeout(() => {
         try {
             const doc = iframe.contentDocument;
             if (!doc || !doc.body || doc.body.innerHTML.trim().length < 30) {
-                console.warn("blank iframe detected");
-                goHome();
+                console.warn("blank iframe detected (will recover next cycle)");
             }
         } catch (e) {
-            // cross-origin → assume OK
+            // Cross-origin → ignore
         }
     }, 4000));
 }
 
-/* ---------- HOME ---------- */
+/* ---------- HOME / COOLDOWN ---------- */
 function goHome() {
     clearAllTimers();
 
@@ -163,13 +168,14 @@ function goHome() {
 
     document.getElementById("state").textContent = "COOLING DOWN";
 
-    let s = COOLDOWN / 1000;
-    document.getElementById("count").textContent = s;
+    let remaining = COOLDOWN / 1000;
+    document.getElementById("count").textContent = remaining;
 
     timers.push(setInterval(() => {
-        s--;
-        document.getElementById("count").textContent = s;
-        if (s <= 0) {
+        remaining--;
+        document.getElementById("count").textContent = remaining;
+
+        if (remaining <= 0) {
             clearAllTimers();
             startCycle();
         }
@@ -180,8 +186,10 @@ function goHome() {
 window.onerror = () => hardReload("js error");
 window.onunhandledrejection = () => hardReload("promise error");
 
-// Absolute failsafe (PyQt memory poison)
-setTimeout(() => hardReload("time based reset"), 15 * 60 * 1000);
+// Absolute PyQt WebEngine failsafe
+setTimeout(() => {
+    hardReload("time based reset");
+}, 15 * 60 * 1000);
 
 /* ---------- START ---------- */
 startCycle();
