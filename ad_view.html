@@ -23,16 +23,8 @@ body {
     align-items: center;
 }
 
-#home h2 {
-    color: #00ff00;
-    font-size: 18px;
-    margin: 4px;
-}
-
-#home p {
-    color: #888;
-    font-size: 12px;
-}
+#home h2 { color: #00ff00; font-size: 18px; margin: 4px; }
+#home p { color: #888; font-size: 12px; }
 
 #spinner {
     width: 18px;
@@ -71,92 +63,34 @@ body {
 /* ================= CONFIG ================= */
 const SMARTLINK = "https://www.effectivegatecpm.com/cw1ee9zt3?key=166a8de6e9417228de30d751d42c81fb";
 
-const VIEW_TIME = 20000;     // 20 seconds (HARD minimum)
-const COOLDOWN = 40000;      // 40 seconds cooldown
-const LOAD_TIMEOUT = 12000;  // iframe load timeout (log only)
-const HARD_RESET_AFTER = 8;  // cycles before full reload safeguard
+const VIEW_TIME = 20000;   // HARD MINIMUM
+const COOLDOWN  = 40000;   // HARD COOLDOWN
 /* ========================================== */
 
 let cycle = 0;
-let timers = [];
 let iframe = null;
 let adStartTime = 0;
+let adLocked = false;
+let cooldownTimer = null;
 
-/* ---------- UTILS ---------- */
-function clearAllTimers() {
-    timers.forEach(t => clearTimeout(t));
-    timers = [];
-}
+/* ---------- HARD LOCKED EXIT ---------- */
+function tryGoHome(reason) {
+    const elapsed = Date.now() - adStartTime;
 
-function hardReload(reason) {
-    console.warn("HARD RELOAD:", reason);
-    location.reload();
-}
-
-/* ---------- CYCLE ---------- */
-function startCycle() {
-    cycle++;
-    clearAllTimers();
-
-    console.log("=== CYCLE", cycle, "START ===");
-
-    if (cycle > HARD_RESET_AFTER) {
-        hardReload("cycle limit reached");
+    if (elapsed < VIEW_TIME) {
+        console.warn(
+            `REFUSED exit (${reason}) at ${elapsed}ms — minimum not reached`
+        );
         return;
     }
 
-    showAd();
-
-    // HARD, FRAUD-SAFE AD END (20s guaranteed)
-    timers.push(setTimeout(() => {
-        console.log("Ad completed full view time");
-        goHome();
-    }, VIEW_TIME));
+    console.log("Ad finished legitimately:", reason);
+    forceGoHome();
 }
 
-/* ---------- AD ---------- */
-function showAd() {
-    adStartTime = Date.now();
-
-    document.getElementById("home").style.display = "none";
-
-    const ad = document.getElementById("ad");
-    ad.style.display = "block";
-    ad.innerHTML = "";
-
-    iframe = document.createElement("iframe");
-    iframe.style.width = "100%";
-    iframe.style.height = "100%";
-    iframe.style.border = "none";
-
-    iframe.onload = () => {
-        console.log("iframe onload");
-    };
-
-    iframe.src = SMARTLINK;
-    ad.appendChild(iframe);
-
-    // LOAD TIMEOUT (LOG ONLY — no early exit)
-    timers.push(setTimeout(() => {
-        console.warn("iframe load timeout (will recover next cycle)");
-    }, LOAD_TIMEOUT));
-
-    // BLANK / POISON DETECTION (LOG ONLY)
-    timers.push(setTimeout(() => {
-        try {
-            const doc = iframe.contentDocument;
-            if (!doc || !doc.body || doc.body.innerHTML.trim().length < 30) {
-                console.warn("blank iframe detected (will recover next cycle)");
-            }
-        } catch (e) {
-            // Cross-origin → ignore
-        }
-    }, 4000));
-}
-
-/* ---------- HOME / COOLDOWN ---------- */
-function goHome() {
-    clearAllTimers();
+/* ---------- FORCE HOME (NO GUARDS) ---------- */
+function forceGoHome() {
+    adLocked = false;
 
     const ad = document.getElementById("ad");
     ad.style.display = "none";
@@ -171,24 +105,61 @@ function goHome() {
     let remaining = COOLDOWN / 1000;
     document.getElementById("count").textContent = remaining;
 
-    timers.push(setInterval(() => {
+    cooldownTimer = setInterval(() => {
         remaining--;
         document.getElementById("count").textContent = remaining;
 
         if (remaining <= 0) {
-            clearAllTimers();
+            clearInterval(cooldownTimer);
             startCycle();
         }
-    }, 1000));
+    }, 1000);
+}
+
+/* ---------- AD ---------- */
+function showAd() {
+    adStartTime = Date.now();
+    adLocked = true;
+
+    document.getElementById("home").style.display = "none";
+
+    const ad = document.getElementById("ad");
+    ad.style.display = "block";
+    ad.innerHTML = "";
+
+    iframe = document.createElement("iframe");
+    iframe.style.width = "100%";
+    iframe.style.height = "100%";
+    iframe.style.border = "none";
+    iframe.src = SMARTLINK;
+
+    ad.appendChild(iframe);
+
+    // HARD 20s GUARANTEE — NOTHING CAN CANCEL THIS
+    setTimeout(() => {
+        tryGoHome("view-time-complete");
+    }, VIEW_TIME);
+}
+
+/* ---------- CYCLE ---------- */
+function startCycle() {
+    cycle++;
+    console.log("=== CYCLE", cycle, "START ===");
+    showAd();
 }
 
 /* ---------- SAFETY ---------- */
-window.onerror = () => hardReload("js error");
-window.onunhandledrejection = () => hardReload("promise error");
+window.onerror = () => {
+    console.warn("JS error — ignored during ad lock");
+};
 
-// Absolute PyQt WebEngine failsafe
+window.onunhandledrejection = () => {
+    console.warn("Promise rejection — ignored during ad lock");
+};
+
+// Absolute PyQt poison reset (outside ad window)
 setTimeout(() => {
-    hardReload("time based reset");
+    if (!adLocked) location.reload();
 }, 15 * 60 * 1000);
 
 /* ---------- START ---------- */
